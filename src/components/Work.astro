@@ -1,0 +1,197 @@
+---
+import { cases } from '../data/site';
+const [featured, ...rest] = cases;
+---
+
+<section class="work" id="arbete">
+  <div class="wrap">
+    <header class="sec">
+      <p class="sec__lbl micro rv">01 — Arbetet</p>
+      <div class="sec__txt">
+        <h2 class="rv">Siffror, med sammanhang.</h2>
+        <p class="lead rv">
+          Procenttal utan sammanhang betyder ingenting. Här är vad vi gjorde, för vem,
+          och vad det faktiskt ledde till.
+        </p>
+      </div>
+    </header>
+
+    <article class="case case--wide rv">
+      <div class="case__frame">
+        <img src={featured.media} alt="" loading="lazy" decoding="async" width="1500" height="1000" />
+      </div>
+      <div class="case__body">
+        <div class="case__top">
+          <ul class="case__disc">
+            {featured.disciplines.map((d) => <li>{d}</li>)}
+          </ul>
+          <p class="case__n">{featured.result}</p>
+        </div>
+        <h3 class="case__client">{featured.client}</h3>
+        <p class="case__text">{featured.body}</p>
+        {featured.source && <p class="case__src">{featured.source}</p>}
+      </div>
+    </article>
+
+    <div class="work__grid">
+      {
+        rest.map((c) => (
+          <article class="case rv">
+            <div class="case__frame">
+              <img src={c.media} alt="" loading="lazy" decoding="async" width="1500" height="1000" />
+            </div>
+            <div class="case__body">
+              <div class="case__top">
+                <ul class="case__disc">
+                  {c.disciplines.map((d) => (
+                    <li>{d}</li>
+                  ))}
+                </ul>
+                <p class="case__n">{c.result}</p>
+              </div>
+              <h3 class="case__client">{c.client}</h3>
+              <p class="case__text">{c.body}</p>
+              {c.source && <p class="case__src">{c.source}</p>}
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .work {
+    background: var(--paper);
+    padding-block: clamp(4rem, 11vh, 8rem);
+  }
+
+  /* ---- shared section header ---- */
+  .sec {
+    display: grid;
+    grid-template-columns: 12rem 1fr;
+    gap: clamp(1rem, 3vw, 3rem);
+    align-items: start;
+    padding-bottom: clamp(2rem, 4vh, 3rem);
+    margin-bottom: clamp(2rem, 5vh, 3.5rem);
+    border-bottom: 1px solid var(--rule-12);
+  }
+  .sec__lbl {
+    color: var(--accent);
+    padding-top: 0.45rem;
+  }
+  .sec__txt h2 {
+    max-width: 16ch;
+    margin-bottom: 1rem;
+  }
+  .sec__txt .lead {
+    color: var(--ink-3);
+  }
+  @media (max-width: 820px) {
+    .sec {
+      grid-template-columns: 1fr;
+      gap: 0.9rem;
+    }
+  }
+
+  /* ---- cases ---- */
+  .case {
+    display: grid;
+    gap: 1.15rem;
+  }
+  .case--wide {
+    margin-bottom: clamp(1.5rem, 3vh, 2.5rem);
+  }
+
+  .case__frame {
+    overflow: hidden;
+    background: var(--sunken);
+    border: 1px solid var(--rule-8);
+  }
+  .case__frame img {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    /* Grade the set toward one temperature so four unrelated photographs
+       read as one body of work. */
+    filter: saturate(0.88) contrast(1.03);
+    transition:
+      filter var(--dur-large) var(--ease-out-quart),
+      transform 900ms var(--ease-out-quart);
+  }
+  .case--wide .case__frame img {
+    aspect-ratio: 21 / 9;
+  }
+  @media (hover: hover) {
+    .case:hover .case__frame img {
+      filter: saturate(1) contrast(1);
+      transform: scale(1.02);
+    }
+  }
+
+  .case__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1.5rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--rule-12);
+  }
+
+  .case__disc {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+  .case__disc li {
+    font-size: var(--t-micro);
+    font-weight: 600;
+    letter-spacing: var(--track-micro);
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border: 1px solid var(--rule-18);
+    padding: 0.28rem 0.6rem;
+    border-radius: 2px;
+  }
+
+  /* Right-aligned so the numbers form one scannable column down the page. */
+  .case__n {
+    font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+    font-weight: 700;
+    letter-spacing: var(--track-display);
+    line-height: 1;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  .case__client {
+    font-size: var(--t-h3);
+    color: var(--ink);
+  }
+  .case__text {
+    font-size: var(--t-note);
+    color: var(--ink-3);
+    max-width: 58ch;
+    line-height: 1.65;
+  }
+  .case__src {
+    font-size: var(--t-micro);
+    color: var(--ink-4);
+  }
+
+  .work__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(1.25rem, 2.6vw, 2rem);
+  }
+  @media (max-width: 900px) {
+    .work__grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+  }
+</style>

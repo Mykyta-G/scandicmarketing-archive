@@ -12,23 +12,12 @@ import { seo } from '../data/site';
   <main id="main">
     <Hero />
     <Clients />
-
-    {/*
-      Order from here, per the agreed skeleton:
-        3  Siffrorna      — moved out of the hero, each with a source line
-        4  Arbetet        — the four cases, proof before explanation
-        5  Tjänster       — the four services
-        6  Hemsida        — 499 / 1499, brought up from the subpage
-        7  Process        — four steps
-        8  Kontakt        — phone, address, hours, a named person
-        9  Footer         — plus the legally required company block
-    */}
   </main>
 </Base>
 
 <script>
-  /* Reveal on scroll. Fires once, downward only, and the resting state is
-     safe if the observer never runs — see .rv in global.css. */
+  /* Reveal on scroll — fires once, downward only. The resting state is safe
+     if the observer never runs; see .rv in global.css. */
   const io = new IntersectionObserver(
     (entries) => {
       entries.forEach((e, i) => {

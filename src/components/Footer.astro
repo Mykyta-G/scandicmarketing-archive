@@ -1,0 +1,154 @@
+---
+import { company, services } from '../data/site';
+const year = new Date().getFullYear();
+---
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__top">
+      <div class="foot__brand">
+        <img src="/img/logo-white.webp" alt={company.name} width="480" height="159" />
+        <p>
+          Film, foto och marknadsföring från {company.city}. Vi hjälper nordiska företag
+          att synas — och sälja.
+        </p>
+      </div>
+
+      <nav class="foot__col" aria-label="Tjänster">
+        <h2>Tjänster</h2>
+        <ul>{services.map((s) => <li><a href="#tjanster">{s.name}</a></li>)}</ul>
+      </nav>
+
+      <nav class="foot__col" aria-label="Företaget">
+        <h2>Företaget</h2>
+        <ul>
+          <li><a href="#arbete">Arbete</a></li>
+          <li><a href="#hemsida">Priser</a></li>
+          <li><a href="#kontakt">Kontakt</a></li>
+          <li><a href={company.instagram} rel="noopener">Instagram</a></li>
+        </ul>
+      </nav>
+
+      <nav class="foot__col" aria-label="Juridiskt">
+        <h2>Juridiskt</h2>
+        <ul>
+          <li><a href="/integritetspolicy/">Integritetspolicy</a></li>
+          <li><a href="/anvandarvillkor/">Användarvillkor</a></li>
+          <li><a href="/cookiepolicy/">Cookiepolicy</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    {/*
+      Legally required, and currently missing from the live site.
+
+      ABL 28 kap. 5 § requires the company name, the kommun where the board
+      sits, and the organisationsnummer on the website itself — enforceable
+      by Bolagsverket at vite. E-handelslagen 8 § adds address, email and VAT
+      number, and 15 § makes an omission "väsentlig" under MFL.
+
+      F-skatt is not required here, but it is the cheapest trust signal
+      available: without it the *buyer* becomes liable for 30% withholding.
+
+      Fields render only when filled, so nothing ships as a placeholder.
+    */}
+    <div class="foot__legal">
+      <span>{company.name}</span>
+      {company.orgNr && <span>Org.nr {company.orgNr}</span>}
+      {company.vatNr && <span>Momsreg.nr {company.vatNr}</span>}
+      <span>Säte: {company.sate}</span>
+      <span>{company.street}, {company.postcode} {company.city}</span>
+      <span><a href={`tel:${company.phoneHref}`}>{company.phone}</a></span>
+      <span><a href={`mailto:${company.email}`}>{company.email}</a></span>
+      {company.fSkatt && <span>Godkänd för F-skatt</span>}
+    </div>
+
+    <div class="foot__bot">
+      <span>© {year} {company.name}. Alla rättigheter förbehållna.</span>
+      <span>Priser exkl. moms</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .foot {
+    background: var(--ground);
+    color: var(--on-dark-2);
+    padding-block: clamp(3rem, 8vh, 5rem) 2rem;
+    font-size: var(--t-note);
+  }
+
+  .foot__top {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr 1fr 1fr;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    padding-bottom: clamp(2rem, 5vh, 3rem);
+  }
+
+  .foot__brand img {
+    height: 26px;
+    width: auto;
+    margin-bottom: 1.1rem;
+  }
+  .foot__brand p {
+    max-width: 32ch;
+    line-height: 1.7;
+  }
+
+  .foot__col h2 {
+    font-size: var(--t-micro);
+    font-weight: 600;
+    letter-spacing: var(--track-micro);
+    text-transform: uppercase;
+    color: var(--on-dark);
+    margin-bottom: 1rem;
+  }
+  .foot__col ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.65rem;
+  }
+  .foot__col a {
+    transition: color var(--dur-hover) var(--ease-out-quart);
+  }
+  .foot__col a:hover {
+    color: var(--accent);
+  }
+
+  .foot__legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    padding-block: 1.25rem;
+    border-top: 1px solid var(--rule-light);
+    border-bottom: 1px solid var(--rule-light);
+    font-size: var(--t-micro);
+    letter-spacing: 0.01em;
+    color: var(--on-dark-2);
+    opacity: 0.72;
+  }
+  .foot__legal a:hover {
+    color: var(--accent);
+  }
+
+  .foot__bot {
+    padding-top: 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: var(--t-micro);
+    opacity: 0.5;
+  }
+
+  @media (max-width: 820px) {
+    .foot__top {
+      grid-template-columns: 1fr 1fr;
+    }
+    .foot__brand {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

@@ -1,0 +1,236 @@
+---
+import SectionHead from './SectionHead.astro';
+import { plans, guarantees, kr } from '../data/site';
+---
+
+<section class="price" id="hemsida">
+  <div class="wrap">
+    <SectionHead
+      label="03 — Hemsida"
+      title="Köp inte en hemsida. Hyr en."
+      lead="En ny hemsida kostar normalt runt 40 000 kr och känns omodern om två år. Vi vänder på modellen: ett fast månadspris, allt inkluderat, uppdaterad så länge ni är kund."
+    />
+
+    <div class="price__grid">
+      {
+        plans.map((p) => (
+          <article class:list={['plan', p.popular && 'plan--pop', 'rv']}>
+            {p.popular && <span class="plan__flag">Mest populär</span>}
+
+            <p class="plan__name micro">{p.name}</p>
+
+            <p class="plan__amt">
+              {kr(p.price)}
+              <span>kr/mån</span>
+            </p>
+
+            <p class="plan__was">
+              <s>Ord. pris {kr(p.was)} kr</s> — lanseringserbjudande
+            </p>
+
+            {/*
+              The first-year total, stated. Partitioned pricing works in your
+              favour on every measure except hiding the total — so we show
+              both and keep the favourable half.
+            */}
+            <p class="plan__year">Första året: {kr(p.price * 12)} kr exkl. moms</p>
+
+            <ul class="plan__feat">
+              {p.features.map((f) => (
+                <li>{f}</li>
+              ))}
+            </ul>
+
+            <a class:list={['btn', p.popular ? 'btn--accent' : 'btn--outline']} href="#kontakt">
+              Välj {p.name}
+              <svg width="15" height="10" viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M0 6h17M13 1l5 5-5 5" />
+              </svg>
+            </a>
+
+            <p class="plan__micro">Ingen bindningstid. Säg upp när du vill.</p>
+          </article>
+        ))
+      }
+    </div>
+
+    {/*
+      The gap in this market. Almost no Swedish competitor answers "what
+      happens if I stop paying" on the sales page — and companies have no
+      statutory right of withdrawal here, so granting one contractually is
+      something none of them can match.
+    */}
+    <ul class="price__guar">
+      {
+        guarantees.map((g) => (
+          <li class="guar rv">
+            <h3 class="guar__t">{g.title}</h3>
+            <p class="guar__b">{g.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="price__fine rv">
+      Alla priser är exklusive moms. Gäller 12 månaders avtal — kortare avtal går att
+      teckna mot en högre månadsavgift. Domänen registreras i ert namn från dag ett.
+    </p>
+  </div>
+</section>
+
+<style>
+  .price {
+    background: var(--paper);
+    padding-block: clamp(4rem, 11vh, 8rem);
+  }
+
+  .price__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(1rem, 2.4vw, 1.75rem);
+  }
+
+  /* Hairline border, no shadow. Elevation comes from the surface shift. */
+  .plan {
+    position: relative;
+    border: 1px solid var(--rule-18);
+    border-radius: 2px;
+    padding: clamp(1.6rem, 3vw, 2.4rem);
+    display: grid;
+    gap: 0.7rem;
+    align-content: start;
+    background: var(--paper);
+    transition:
+      border-color var(--dur-large) var(--ease-out-quart),
+      background var(--dur-large) var(--ease-out-quart);
+  }
+  .plan--pop {
+    border-color: var(--ink);
+    background: var(--surface);
+  }
+  @media (hover: hover) {
+    .plan:hover {
+      border-color: var(--ink);
+    }
+  }
+
+  .plan__flag {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: var(--t-micro);
+    font-weight: 700;
+    letter-spacing: var(--track-micro);
+    text-transform: uppercase;
+    padding: 0.35rem 0.7rem;
+  }
+
+  .plan__name {
+    color: var(--ink-3);
+  }
+
+  .plan__amt {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: clamp(2.4rem, 5vw, 3.4rem);
+    font-weight: 700;
+    letter-spacing: var(--track-display);
+    line-height: 1;
+    color: var(--ink);
+  }
+  .plan__amt span {
+    font-size: var(--t-note);
+    font-weight: 500;
+    letter-spacing: var(--track-body);
+    color: var(--ink-3);
+  }
+
+  .plan__was {
+    font-size: var(--t-micro);
+    color: var(--ink-4);
+  }
+  .plan__year {
+    font-size: var(--t-micro);
+    color: var(--ink-3);
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--rule-12);
+  }
+
+  .plan__feat {
+    list-style: none;
+    margin: 0.4rem 0 0.6rem;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+  .plan__feat li {
+    font-size: var(--t-note);
+    color: var(--ink-2);
+    display: flex;
+    gap: 0.7rem;
+  }
+  .plan__feat li::before {
+    content: '';
+    flex: 0 0 auto;
+    width: 6px;
+    height: 6px;
+    margin-top: 0.55em;
+    background: var(--accent);
+  }
+
+  .plan .btn {
+    justify-self: stretch;
+  }
+  .plan__micro {
+    font-size: var(--t-micro);
+    color: var(--ink-4);
+    text-align: center;
+  }
+
+  /* ---- risk reversal ---- */
+  .price__guar {
+    list-style: none;
+    margin: clamp(1rem, 2.4vw, 1.75rem) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--rule-18);
+    border: 1px solid var(--rule-18);
+  }
+  .guar {
+    background: var(--paper);
+    padding: clamp(1.2rem, 2.4vw, 1.75rem);
+    display: grid;
+    gap: 0.45rem;
+    align-content: start;
+  }
+  .guar__t {
+    font-size: var(--t-body);
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .guar__b {
+    font-size: var(--t-note);
+    color: var(--ink-3);
+    line-height: 1.6;
+  }
+
+  .price__fine {
+    margin-top: clamp(1.5rem, 3vh, 2.25rem);
+    font-size: var(--t-micro);
+    color: var(--ink-4);
+    max-width: 68ch;
+    line-height: 1.75;
+  }
+
+  @media (max-width: 860px) {
+    .price__grid,
+    .price__guar {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

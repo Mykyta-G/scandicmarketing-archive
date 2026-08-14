@@ -1,0 +1,330 @@
+---
+import { clients } from '../data/site';
+import terrain from '../data/kebnekaise.json';
+
+/*
+  Kebnekaise, from real elevation data — a 56x56 grid over roughly 14 x 14 km
+  around the south summit, 520 to 2048 m, fetched from ASTER GDEM. Quantised
+  to 8-bit and base64'd, so the whole mountain costs 4.1 KB.
+
+  Rendered as ridgelines with hidden-line removal rather than a shaded mesh:
+  it is genuinely 3D — real terrain, real perspective, a real camera moving
+  through it — but it draws in the same hairline language as the rest of the
+  site, and it costs ~8 KB of renderer instead of 400 KB of WebGL library.
+*/
+const headline = 'Resultat som är på topp';
+const sub = 'Sju företag som satsat på sin marknadsföring — och fått betalt för det.';
+---
+
+<section class="mtn" id="samarbeten" data-mtn>
+  <div class="mtn__stage">
+    <canvas class="mtn__canvas" data-canvas aria-hidden="true"></canvas>
+
+    <div class="mtn__grad" aria-hidden="true"></div>
+
+    {/* The arc. Client logos take the place of Paramount's stars. */}
+    <ul class="mtn__arc" data-arc>
+      {
+        clients.map((c, i) => (
+          <li class="mtn__star" style={`--i:${i}; --n:${clients.length}`}>
+            <img src={c.logo} alt={c.name} loading="lazy" decoding="async" />
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="mtn__type">
+      <h2 class="mtn__h" data-h>{headline}</h2>
+      <p class="mtn__sub" data-sub>{sub}</p>
+    </div>
+
+    <p class="mtn__meta" aria-hidden="true">
+      Kebnekaise · 67.9058° N, 18.5169° E · 2 096 m
+    </p>
+  </div>
+</section>
+
+<script define:vars={{ terrain }}>
+  (() => {
+    const section = document.querySelector('[data-mtn]');
+    const canvas = document.querySelector('[data-canvas]');
+    if (!section || !canvas) return;
+
+    const ctx = canvas.getContext('2d', { alpha: false });
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ---- decode the terrain ---- */
+    const N = terrain.n;
+    const bin = atob(terrain.d);
+    const h = new Float32Array(N * N);
+    for (let k = 0; k < bin.length; k++) h[k] = bin.charCodeAt(k) / 255;
+
+    /* World: x and z span [-1, 1]; y is normalised height times relief. */
+    const RELIEF = 0.42;
+    const GROUND = '#001529';
+    const LINE = '#8fb4d6';
+    const LINE_HI = '#eef2f6';
+
+    let W = 0, Hh = 0, dpr = 1;
+
+    function resize() {
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      W = canvas.clientWidth;
+      Hh = canvas.clientHeight;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(Hh * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    /*
+      Pinhole camera. Translate into camera space, pitch about X, then
+      divide by depth. Nothing exotic — but it is a real projection, so the
+      parallax between near and far ridges is physically correct rather than
+      a set of layers moving at made-up rates.
+    */
+    function project(x, y, z, cam) {
+      const dx = x - cam.x;
+      const dy = y - cam.y;
+      const dz = z - cam.z;
+      const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+      const ry = dy * cp - dz * sp;
+      const rz = dy * sp + dz * cp;
+      if (rz > -0.05) return null; // behind the lens
+      const f = cam.f * Math.min(W, Hh);
+      return { sx: W / 2 + (f * dx) / -rz, sy: Hh / 2 - (f * ry) / -rz, d: -rz };
+    }
+
+    function draw(p) {
+      // p: 0 at the top of the sequence, 1 when we have flown past the peak
+      const cam = {
+        x: 0,
+        y: 0.30 + p * 0.34,
+        z: 2.25 - p * 2.75,
+        pitch: -0.19 + p * 0.12,
+        f: 0.92 + p * 0.30,
+      };
+
+      ctx.fillStyle = GROUND;
+      ctx.fillRect(0, 0, W, Hh);
+
+      /*
+        Painter's algorithm: rows from the far edge forward. Each ridge is
+        filled with the ground colour down to the bottom of the frame before
+        its crest is stroked, so nearer ridges occlude what is behind them.
+        That occlusion is what makes it read as solid rock rather than a net.
+      */
+      const step = W < 720 ? 2 : 1;
+      for (let j = N - 1; j >= 0; j -= step) {
+        const pts = [];
+        for (let i = 0; i < N; i++) {
+          const x = (i / (N - 1) - 0.5) * 2.6;
+          const z = (j / (N - 1) - 0.5) * 2.6;
+          const y = h[j * N + i] * RELIEF;
+          const q = project(x, y, z, cam);
+          if (q) pts.push(q);
+        }
+        if (pts.length < 2) continue;
+
+        ctx.beginPath();
+        ctx.moveTo(pts[0].sx, pts[0].sy);
+        for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k].sx, pts[k].sy);
+
+        ctx.save();
+        ctx.lineTo(pts[pts.length - 1].sx, Hh + 40);
+        ctx.lineTo(pts[0].sx, Hh + 40);
+        ctx.closePath();
+        ctx.fillStyle = GROUND;
+        ctx.fill();
+        ctx.restore();
+
+        // Depth fade: far ridges recede, the near ones carry the contrast.
+        const t = 1 - j / (N - 1);
+        ctx.strokeStyle = t > 0.82 ? LINE_HI : LINE;
+        ctx.globalAlpha = 0.16 + t * 0.72;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    /* ---- scroll drive ---- */
+    let progress = 0, queued = false;
+
+    function onScroll() {
+      const r = section.getBoundingClientRect();
+      const span = r.height - innerHeight;
+      progress = span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0;
+      section.style.setProperty('--p', progress.toFixed(4));
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(() => {
+          draw(progress);
+          queued = false;
+        });
+      }
+    }
+
+    resize();
+    draw(0);
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', () => {
+      resize();
+      draw(progress);
+    });
+
+    if (reduce) {
+      // Hold a composed frame rather than flying the camera.
+      draw(0.42);
+      removeEventListener('scroll', onScroll);
+    }
+  })();
+</script>
+
+<style>
+  /*
+    Tall enough to give the camera somewhere to travel. The stage pins while
+    the page scrolls past it, which is a real sticky element — the page never
+    stops responding to the scrollbar, so find-in-page, keyboard paging and
+    deep links all keep working. No scroll-jacking.
+  */
+  .mtn {
+    --p: 0;
+    position: relative;
+    height: 320vh;
+    background: var(--ground);
+  }
+
+  .mtn__stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+    background: var(--ground);
+  }
+
+  .mtn__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* Seam with the hero above and the light section below. */
+  .mtn__grad {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(to bottom, rgb(0 21 41 / 0.9) 0%, rgb(0 21 41 / 0) 22%),
+      linear-gradient(to top, rgb(0 21 41 / 0.85) 0%, rgb(0 21 41 / 0) 26%);
+  }
+
+  /* ---------- the arc of logos ---------- */
+  .mtn__arc {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    pointer-events: none;
+  }
+
+  .mtn__star {
+    --a: calc((var(--i) / (var(--n) - 1) - 0.5) * 152deg);
+    --r: min(38vw, 32svh);
+
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    width: clamp(72px, 8.5vw, 128px);
+    height: clamp(26px, 3vw, 40px);
+
+    /* Place on the ellipse, then counter-rotate so each logo stays upright. */
+    transform: translate(-50%, -50%) rotate(var(--a)) translateY(calc(var(--r) * -1))
+      rotate(calc(var(--a) * -1));
+
+    display: grid;
+    place-items: center;
+
+    /* Each one lights up in turn as the camera climbs. */
+    opacity: clamp(0, calc((var(--p) - var(--i) * 0.055) * 9), 1);
+    transition: opacity 120ms linear;
+  }
+
+  .mtn__star img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    object-fit: contain;
+    /* One treatment across seven different logo palettes, on a dark ground. */
+    filter: brightness(0) invert(1) opacity(0.86);
+  }
+
+  /* ---------- type ---------- */
+  .mtn__type {
+    position: absolute;
+    left: 50%;
+    top: 58%;
+    transform: translate(-50%, 0);
+    width: min(100% - 2 * var(--gutter), 46rem);
+    text-align: center;
+    display: grid;
+    gap: 0.9rem;
+    pointer-events: none;
+  }
+
+  .mtn__h {
+    color: var(--on-dark);
+    font-size: clamp(1.9rem, 5.2vw, 4.2rem);
+    letter-spacing: var(--track-display);
+    line-height: 1;
+    opacity: clamp(0, calc((var(--p) - 0.42) * 6), 1);
+    transform: translateY(calc((1 - clamp(0, (var(--p) - 0.42) * 6, 1)) * 16px));
+  }
+
+  .mtn__sub {
+    color: var(--on-dark-2);
+    font-size: var(--t-note);
+    max-width: 40ch;
+    margin-inline: auto;
+    opacity: clamp(0, calc((var(--p) - 0.54) * 6), 1);
+  }
+
+  .mtn__meta {
+    position: absolute;
+    left: var(--gutter);
+    bottom: clamp(1.25rem, 3.5vh, 2rem);
+    font-size: var(--t-micro);
+    letter-spacing: var(--track-micro);
+    text-transform: uppercase;
+    color: var(--on-dark-2);
+    opacity: 0.42;
+  }
+
+  @media (max-width: 700px) {
+    .mtn {
+      height: 260vh;
+    }
+    .mtn__meta {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mtn {
+      height: 100svh;
+    }
+    .mtn__star,
+    .mtn__h,
+    .mtn__sub {
+      opacity: 1;
+      transform: translate(-50%, -50%) rotate(var(--a)) translateY(calc(var(--r) * -1))
+        rotate(calc(var(--a) * -1));
+    }
+    .mtn__h,
+    .mtn__sub {
+      transform: none;
+    }
+  }
+</style>

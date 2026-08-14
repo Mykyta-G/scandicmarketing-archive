@@ -118,6 +118,7 @@ export const cases: Case[] = [
     result: '+500%',
     body: 'Genom optimerad SEO och Google Ads ökade Hantverkskollen sin trafik med 500 % och genererade dagliga leads.',
     source: '', // ⚠️ e.g. "Google Search Console, mars 2024–mars 2025"
+    media: '/img/case-hantverkskollen.webp',
     featured: true,
   },
   {
@@ -126,6 +127,7 @@ export const cases: Case[] = [
     result: '+340%',
     body: 'Genom Meta- och TikTok-kampanjer hjälpte vi ett nordiskt e-handelsföretag att tredubbla sin vanliga månadsförsäljning på bara 6 dagar.',
     source: '', // ⚠️
+    media: '/img/case-ehandel.webp',
   },
   {
     client: 'Foodtel',
@@ -133,6 +135,7 @@ export const cases: Case[] = [
     result: 'Varje månad',
     body: "Vi driver Foodtels LinkedIn och bidrar med professionella videos och bilder varje månad. Det har frigjort tid så att bolaget kan fokusera på det viktigaste.",
     source: '',
+    media: '/img/case-foodtel.webp',
   },
   {
     client: 'Lokalt gatukök',
@@ -140,6 +143,7 @@ export const cases: Case[] = [
     result: 'Ny identitet',
     body: 'Vi hjälpte ett lokalt gatukök att förnya sin visuella identitet och digitala närvaro för att attrahera fler kunder.',
     source: '',
+    media: '/img/case-gatukok.webp',
   },
 ];
 

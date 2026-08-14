@@ -1,0 +1,58 @@
+---
+interface Props {
+  label: string;
+  title: string;
+  lead?: string;
+  /** Inverts for use on the dark ground. */
+  dark?: boolean;
+}
+const { label, title, lead, dark = false } = Astro.props;
+---
+
+<header class:list={['sec', dark && 'sec--dark']}>
+  <p class="sec__lbl micro rv">{label}</p>
+  <div class="sec__txt">
+    <h2 class="rv">{title}</h2>
+    {lead && <p class="lead rv">{lead}</p>}
+  </div>
+</header>
+
+<style>
+  .sec {
+    display: grid;
+    grid-template-columns: 12rem 1fr;
+    gap: clamp(1rem, 3vw, 3rem);
+    align-items: start;
+    padding-bottom: clamp(2rem, 4vh, 3rem);
+    margin-bottom: clamp(2rem, 5vh, 3.5rem);
+    border-bottom: 1px solid var(--rule-12);
+  }
+  .sec__lbl {
+    color: var(--accent);
+    padding-top: 0.45rem;
+  }
+  .sec__txt h2 {
+    max-width: 16ch;
+  }
+  .sec__txt .lead {
+    margin-top: 1rem;
+    color: var(--ink-3);
+  }
+
+  .sec--dark {
+    border-bottom-color: var(--rule-light);
+  }
+  .sec--dark :global(h2) {
+    color: var(--on-dark);
+  }
+  .sec--dark .lead {
+    color: var(--on-dark-2);
+  }
+
+  @media (max-width: 820px) {
+    .sec {
+      grid-template-columns: 1fr;
+      gap: 0.9rem;
+    }
+  }
+</style>

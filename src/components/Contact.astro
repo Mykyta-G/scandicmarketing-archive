@@ -1,0 +1,153 @@
+---
+import { company, hero } from '../data/site';
+---
+
+<section class="cta" id="kontakt">
+  <div class="wrap">
+    <p class="cta__lbl micro rv">05 — Kontakt</p>
+
+    <h2 class="cta__h rv">Berätta vart ni vill.</h2>
+
+    <p class="lead cta__lead rv">
+      Vi svarar inom 24 timmar — med ett ja, ett nej, eller en fråga tillbaka.
+      Det sparar tid för alla.
+    </p>
+
+    <div class="cta__row rv">
+      <a class="btn btn--accent btn--lg" href="#">
+        {hero.primary.label}
+        <svg width="17" height="11" viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M0 6h17M13 1l5 5-5 5" />
+        </svg>
+      </a>
+      {/*
+        Business buyers say outright that they prefer phoning a person to
+        filling in a form, and a contact form draws suspicion. So the phone
+        number is an equal partner to the button, not a footnote.
+      */}
+      <p class="cta__alt">
+        eller ring <a href={`tel:${company.phoneHref}`}>{company.phone}</a>
+      </p>
+    </div>
+
+    <dl class="cta__det rv">
+      <div>
+        <dt>Telefon</dt>
+        <dd><a href={`tel:${company.phoneHref}`}>{company.phone}</a></dd>
+      </div>
+      <div>
+        <dt>E-post</dt>
+        <dd><a href={`mailto:${company.email}`}>{company.email}</a></dd>
+      </div>
+      <div>
+        <dt>Besök</dt>
+        <dd>{company.street}<br />{company.postcode} {company.city}</dd>
+      </div>
+      <div>
+        <dt>Öppettider</dt>
+        <dd>
+          {company.hours.map((h) => (
+            <span class="cta__hrs">{h.day}<b>{h.time}</b></span>
+          ))}
+        </dd>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<style>
+  .cta {
+    background: var(--paper);
+    padding-block: clamp(4.5rem, 13vh, 9rem);
+  }
+
+  .cta__lbl {
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+  }
+
+  .cta__h {
+    font-size: clamp(2.4rem, 7vw, 5.4rem);
+    letter-spacing: var(--track-display);
+    line-height: 0.98;
+    max-width: 14ch;
+  }
+
+  .cta__lead {
+    margin-top: 1.25rem;
+    color: var(--ink-3);
+    max-width: 48ch;
+  }
+
+  .cta__row {
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .cta__alt {
+    font-size: var(--t-note);
+    color: var(--ink-3);
+  }
+  .cta__alt a {
+    color: var(--ink);
+    font-weight: 600;
+    border-bottom: 1px solid var(--rule-28);
+    padding-bottom: 1px;
+    transition: border-color var(--dur-hover) var(--ease-out-quart);
+  }
+  .cta__alt a:hover {
+    border-bottom-color: var(--accent);
+  }
+
+  .cta__det {
+    margin: clamp(3rem, 7vh, 5rem) 0 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--rule-18);
+    border: 1px solid var(--rule-18);
+  }
+  .cta__det > div {
+    background: var(--paper);
+    padding: clamp(1.1rem, 2.2vw, 1.6rem);
+  }
+  .cta__det dt {
+    font-size: var(--t-micro);
+    font-weight: 600;
+    letter-spacing: var(--track-micro);
+    text-transform: uppercase;
+    color: var(--ink-4);
+  }
+  .cta__det dd {
+    margin: 0.6rem 0 0;
+    font-size: var(--t-note);
+    color: var(--ink);
+    line-height: 1.55;
+  }
+  .cta__det a:hover {
+    color: var(--accent);
+  }
+
+  .cta__hrs {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .cta__hrs b {
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+
+  @media (max-width: 900px) {
+    .cta__det {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 520px) {
+    .cta__det {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

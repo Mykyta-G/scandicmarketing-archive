@@ -1,0 +1,123 @@
+---
+import { stats } from '../data/site';
+---
+
+<section class="stats">
+  <div class="wrap">
+    <ul class="stats__row">
+      {
+        stats.map((s) => (
+          <li class="stats__cell rv">
+            <div class="stats__n">
+              <span data-count={s.value}>0</span><sup>{s.suffix}</sup>
+            </div>
+            <p class="stats__l">{s.label}</p>
+            {/*
+              The source line is the difference between a legal claim and an
+              illegal one. Swedish marketing law reverses the burden of proof
+              — an undocumented figure is misleading by default. Empty for
+              now, so it renders nothing rather than a placeholder.
+            */}
+            {s.source && <p class="stats__src">{s.source}</p>}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .stats {
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule-12);
+  }
+
+  .stats__row {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Hairlines, not cards. The rule is the ink at 12% rather than a grey. */
+  .stats__cell {
+    padding: clamp(2.5rem, 6vh, 4.5rem) clamp(1rem, 3vw, 2.5rem) clamp(2.5rem, 6vh, 4.5rem) 0;
+    border-right: 1px solid var(--rule-12);
+  }
+  .stats__cell:last-child {
+    border-right: 0;
+  }
+
+  .stats__n {
+    display: flex;
+    align-items: baseline;
+    font-size: clamp(2.6rem, 6vw, 4.6rem);
+    font-weight: 700;
+    letter-spacing: var(--track-display);
+    line-height: 0.9;
+    color: var(--ink);
+  }
+  .stats__n sup {
+    font-size: 0.4em;
+    top: -0.55em;
+    position: relative;
+    color: var(--accent);
+    letter-spacing: 0;
+  }
+
+  .stats__l {
+    margin-top: 1rem;
+    font-size: var(--t-note);
+    color: var(--ink-3);
+    max-width: 22ch;
+  }
+  .stats__src {
+    margin-top: 0.4rem;
+    font-size: var(--t-micro);
+    color: var(--ink-4);
+    max-width: 26ch;
+  }
+
+  @media (max-width: 760px) {
+    .stats__row {
+      grid-template-columns: 1fr;
+    }
+    .stats__cell {
+      border-right: 0;
+      border-bottom: 1px solid var(--rule-12);
+      padding-block: 2rem;
+    }
+    .stats__cell:last-child {
+      border-bottom: 0;
+    }
+  }
+</style>
+
+<script>
+  /* Count up once, on first sight, with an ease-out cubic. */
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        io.unobserve(e.target);
+        e.target.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => {
+          const to = Number(el.dataset.count);
+          if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            el.textContent = String(to);
+            return;
+          }
+          const t0 = performance.now();
+          const tick = (t: number) => {
+            const k = Math.min(1, (t - t0) / 1400);
+            el.textContent = String(Math.round(to * (1 - Math.pow(1 - k, 3))));
+            if (k < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+      });
+    },
+    { threshold: 0.4 }
+  );
+  document.querySelectorAll('.stats__cell').forEach((el) => io.observe(el));
+</script>

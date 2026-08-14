@@ -103,12 +103,11 @@ import { company, hero } from '../data/site';
     object-fit: cover;
     z-index: 0;
     /*
-      The source is a hazy aerial — flat by nature. Contrast is lifted so the
-      film reads through the letterforms instead of filling them with one
-      even grey, and saturation is pulled back so the frame sits in his
-      palette rather than fighting it.
+      Contrast only. The source is a hazy aerial and flat by nature, so it
+      needs a lift for the film to read through the letterforms — but the
+      colour is left alone. No desaturation, no tint.
     */
-    filter: contrast(1.22) saturate(0.62) brightness(1.02);
+    filter: contrast(1.18) brightness(1.03);
   }
 
   .hero__knock {
@@ -120,7 +119,13 @@ import { company, hero } from '../data/site';
     /* Optical centring — the sub, buttons and cue sit below, so geometric
        centre reads low. */
     padding-bottom: clamp(7rem, 17vh, 12rem);
-    background: #33435c;
+    /*
+      Neutral grey, not a navy tint. multiply with a coloured panel casts
+      that colour over the whole frame — which is where the blue wash came
+      from. A neutral panel darkens the surround by the same amount and
+      leaves the film's own colour alone.
+    */
+    background: #4a4a4a;
     mix-blend-mode: multiply;
   }
 

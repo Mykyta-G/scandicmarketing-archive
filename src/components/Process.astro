@@ -1,0 +1,84 @@
+---
+import SectionHead from './SectionHead.astro';
+import { process } from '../data/site';
+---
+
+<section class="proc">
+  <div class="wrap">
+    <SectionHead label="04 — Processen" title="Fyra steg. Inga överraskningar." dark />
+
+    <ol class="proc__list">
+      {
+        process.map((s) => (
+          <li class="proc__step rv">
+            <span class="proc__n">{s.n}</span>
+            <h3 class="proc__t">{s.title}</h3>
+            <p class="proc__b">{s.body}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  /* The one dark band in the lower half — it gives the page a second beat
+     and sets the contact section up as the close. */
+  .proc {
+    background: var(--ground);
+    padding-block: clamp(4rem, 11vh, 8rem);
+  }
+
+  .proc__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--rule-light);
+    border: 1px solid var(--rule-light);
+  }
+
+  .proc__step {
+    background: var(--ground);
+    padding: clamp(1.4rem, 2.6vw, 2rem);
+    display: grid;
+    gap: 0.55rem;
+    align-content: start;
+    transition: background var(--dur-large) var(--ease-out-quart);
+  }
+  @media (hover: hover) {
+    .proc__step:hover {
+      background: #041d33;
+    }
+  }
+
+  .proc__n {
+    font-size: var(--t-micro);
+    font-weight: 600;
+    letter-spacing: var(--track-micro);
+    color: var(--accent);
+  }
+  .proc__t {
+    font-size: var(--t-body);
+    font-weight: 700;
+    color: var(--on-dark);
+  }
+  .proc__b {
+    font-size: var(--t-note);
+    color: var(--on-dark-2);
+    line-height: 1.65;
+  }
+
+  @media (max-width: 900px) {
+    .proc__list {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 560px) {
+    .proc__list {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
