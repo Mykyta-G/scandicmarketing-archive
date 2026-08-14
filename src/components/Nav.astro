@@ -51,11 +51,15 @@ import { company, nav, hero } from '../data/site';
     transition: opacity var(--dur-large) var(--ease-out-quart);
   }
 
+  /*
+    Full bleed — the nav spans the viewport rather than sitting inside the
+    1280px content column. Otherwise the logo floats hundreds of pixels in
+    from the edge on a wide screen while the hero's scroll cue and pause
+    control sit at the true corners, and the two read as different systems.
+  */
   .nav__in {
     position: relative;
-    max-width: var(--page-max);
-    margin-inline: auto;
-    padding-inline: var(--gutter);
+    padding-inline: clamp(1rem, 2.2vw, 2.25rem);
     height: var(--nav-h);
     display: flex;
     align-items: center;
@@ -130,8 +134,15 @@ import { company, nav, hero } from '../data/site';
     }
   }
 
+  /*
+    Navy glow, not an orange one. A coloured shadow under a button of the
+    same hue just smears the edge; grounding it in the brand ink makes the
+    orange sit on the page instead of bleeding into it.
+  */
   .nav__cta {
-    box-shadow: 0 1px 2px rgb(0 21 41 / 0.16), 0 8px 22px rgb(226 98 42 / 0.26);
+    box-shadow:
+      0 1px 2px rgb(0 21 41 / 0.2),
+      0 10px 26px rgb(0 21 41 / 0.38);
   }
 
   /* ---- past the hero ---- */

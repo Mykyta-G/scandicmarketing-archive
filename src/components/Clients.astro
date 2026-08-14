@@ -2,7 +2,7 @@
 import { clients, clientsLabel, clientsCaption } from '../data/site';
 
 /* Duplicated once so translateX(-50%) lands exactly on a seam — a seamless
-   loop with no JS and no reflow. */
+   right-to-left loop with no JS and no reflow. */
 const track = [...clients, ...clients];
 ---
 
@@ -15,20 +15,15 @@ const track = [...clients, ...clients];
   </div>
 
   <div class="clients__marquee">
-    <div class="clients__track">
+    <ul class="clients__track">
       {
         track.map((c, i) => (
-          <div class="clients__item" style={`--w:${c.width}px`} aria-hidden={i >= clients.length ? 'true' : undefined}>
-            <img
-              src={c.logo}
-              alt={i >= clients.length ? '' : c.name}
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
+          <li class="clients__item" style={`--w:${c.width}px`} aria-hidden={i >= clients.length ? 'true' : undefined}>
+            <img src={c.logo} alt={i >= clients.length ? '' : c.name} loading="lazy" decoding="async" />
+          </li>
         ))
       }
-    </div>
+    </ul>
   </div>
 
   <div class="wrap">
@@ -39,8 +34,7 @@ const track = [...clients, ...clients];
 <style>
   /*
     Hard cut from the film to paper — no gradient between them. The cut is
-    where the drama is, and it makes the light surface read as a deliberate
-    second material rather than "the rest of the page".
+    where the drama is.
   */
   .clients {
     background: var(--surface);
@@ -67,49 +61,60 @@ const track = [...clients, ...clients];
     border-radius: 2px;
   }
 
-  /* ---- marquee ---- */
+  /* ---------- marquee ---------- */
   .clients__marquee {
-    margin-block: clamp(1.5rem, 4vh, 2.5rem);
+    margin-block: clamp(1.75rem, 4vh, 3rem);
     position: relative;
-    /* Fade the ends instead of cutting them — the row should read as
-       continuing past the viewport, not as a clipped strip. */
-    mask-image: linear-gradient(
-      to right,
-      transparent 0,
-      #000 9%,
-      #000 91%,
-      transparent 100%
-    );
+    /* Full bleed: the row should read as continuing past the viewport, so it
+       escapes the content column and fades at both edges instead of being
+       cut off. */
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%);
   }
 
   .clients__track {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
     display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
     align-items: center;
-    gap: 3rem;
+    gap: clamp(2rem, 4vw, 3.5rem);
+
     width: max-content;
-    animation: marquee 46s linear infinite;
+    will-change: transform;
+    animation: marquee-left 52s linear infinite;
   }
-  /* Readable and clickable when someone actually looks at it. */
-  .clients__marquee:hover .clients__track {
+
+  /* Pause so it can actually be read, and so the logos are clickable later. */
+  .clients__marquee:hover .clients__track,
+  .clients__marquee:focus-within .clients__track {
     animation-play-state: paused;
   }
 
-  @keyframes marquee {
+  @keyframes marquee-left {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
     to {
-      transform: translateX(-50%);
+      transform: translate3d(-50%, 0, 0);
     }
   }
 
   /*
-    Width per logo is the hand-set optical correction from the current site.
-    max-width keeps it inside that box — on the current site the images
-    overflow their containers, which is why CrossFit and Excite are clipped
-    at the edges of the row.
+    Width per logo is the hand-set optical correction carried over from the
+    current site — it is why a wide wordmark and a compact roundel read at
+    the same weight. Capped against the viewport so a 320px logo doesn't
+    dominate a phone.
   */
   .clients__item {
     flex: 0 0 auto;
-    width: clamp(120px, calc(var(--w) * 0.5), var(--w));
-    height: clamp(48px, 7vw, 76px);
+    width: min(var(--w), 42vw);
+    height: clamp(52px, 7.5vw, 92px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -129,13 +134,17 @@ const track = [...clients, ...clients];
     color: var(--ink-3);
   }
 
+  /*
+    Reduced motion stops the travel but keeps the row a row — turning it into
+    a wrapping stack would be a different component, not a calmer one.
+  */
   @media (prefers-reduced-motion: reduce) {
     .clients__track {
       animation: none;
-      /* Without motion the duplicate half is dead weight — let it scroll. */
-      width: auto;
+    }
+    .clients__marquee {
       overflow-x: auto;
-      justify-content: flex-start;
+      scrollbar-width: thin;
     }
   }
 </style>
