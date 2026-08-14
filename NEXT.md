@@ -69,6 +69,22 @@ Tree line at 68° N is around **500 m**; in the Alps it's 2,200 m. Stetind is 13
 
 ---
 
+## Two assets he downloaded, worth using next time
+
+Both are in `~/Downloads/`, and `Mount hood` is extracted to `blender/assets/`.
+
+**`Mount+hood.zip`** — FBX terrain, 97k verts over 8 km, so 25 m per sample: ten times coarser than the ArcticDEM Stetind data. But it ships a **real orthophoto** (2816x2560) with genuine glacial ice, crevasses and snow. That texture is the photographic information procedural material cannot invent. Rendered fine; see `render/hood.png`.
+
+**`Procedural+Mountains+and+Clouds.blend`** — the more useful of the two, but not as a mountain. It solves clouds properly: seven separate volumetric shapes driven by node groups `CloudBase`, `DistortCenteredNoise`, `TriLerp`, `RelativeToBounds`, `OffsetNoise`. Node groups are appendable, so they can be lifted into our scene without rebuilding them. Terrain there is displacement-driven with adaptive subdivision rather than a fixed grid.
+
+⚠️ **It is very expensive to render.** One frame at 1280px/40 samples had not finished after 6.5 minutes on the M4 GPU. Its own 250-frame animation would be 20+ hours. Render it small (480px, 8 samples) just to study the clouds.
+
+### The synthesis these point at
+
+Stetind's real 2 m geometry (already fetched) + **real satellite imagery draped on it** (ESRI World Imagery tiles are already verified accessible — see the earlier Kebnekaise test) + **these cloud node groups**. That combination gives photographic surface, real high-resolution form, and believable clouds — rather than inventing all three procedurally.
+
+---
+
 ## Tooling verdicts (researched, don't re-litigate)
 
 - **Gaea cannot run on this Mac** — Windows only, and QuadSpinner has said no Mac version is planned. Same for World Creator and Instant Terra. Terragen is Rosetta-only.
