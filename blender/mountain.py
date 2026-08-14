@@ -30,6 +30,7 @@ SAMPLES = int(arg('--samples', 24))
 OUT = arg('--out', '//render/peak')
 SEED = int(arg('--seed', 7))
 ENGINE = arg('--engine', 'EEVEE')
+EROSION = int(arg('--erode', 1))
 
 N = 512          # heightfield resolution
 SIZE = 20.0      # world units across
@@ -120,11 +121,82 @@ mesh.shade_smooth()
 peak = bpy.data.objects.new('Peak', mesh)
 bpy.context.collection.objects.link(peak)
 
+# ---------------------------------------------------------------- erosion
+# Procedural noise has no history. Real mountains are cut by water and
+# frost, which is what produces drainage networks, talus fans at the base
+# and slopes bounded by the angle of repose. Without it the silhouette can
+# be perfect and the eye still reads "generated".
+#
+# A.N.T. Landscape ships a hydraulic + thermal eroder that operates on any
+# grid mesh, so it runs directly on the one built above.
+if EROSION > 0:
+    import addon_utils
+    addon_utils.enable('bl_ext.blender_org.antlandscape', default_set=True)
+    bpy.context.view_layer.objects.active = peak
+    peak.select_set(True)
+    bpy.ops.mesh.eroder(
+        Iterations=EROSION,
+        IterRiver=30,      # hydraulic passes — carves the gullies
+        IterAva=6,         # avalanche/thermal — enforces the angle of repose
+        IterDiffuse=4,
+        Kt=math.radians(58),   # talus angle
+        Kr=0.012,              # rainfall
+        Ks=0.55,               # scour
+        Kdep=0.12,             # deposition
+        Kz=0.32,
+        Kc=0.92,               # carrying capacity
+        Kev=0.5,
+        numexpr=False,         # measured slower when present, and unneeded
+        smooth=True,
+    )
+    # The eroder hands back the masks we would otherwise fake with noise.
+    print('EROSION groups:', [g.name for g in peak.vertex_groups])
+    h = np.array([v.co.z for v in peak.data.vertices]).reshape(N, N)
+
 summit_i = int(np.argmax(h))
-summit = Vector((verts[summit_i][0], verts[summit_i][1], verts[summit_i][2]))
+summit = Vector((peak.data.vertices[summit_i].co.x, peak.data.vertices[summit_i].co.y, peak.data.vertices[summit_i].co.z))
 print(f'SUMMIT at {summit.x:.2f}, {summit.y:.2f}, {summit.z:.2f}')
 
 # ---------------------------------------------------------------- material
+"""
+The flat matte surface was the single biggest reason the render read as
+animated rather than photographed. Rock has structure at three scales at
+once — strata and fracture, weathering, grain — and a single base colour
+has none of them.
+
+So: real scanned CC0 PBR from ambientCG, box-projected because the mesh has
+no UVs, layered at two scales so the macro pattern does not visibly tile,
+and mixed by the erosion masks rather than by slope alone. Snow that sits
+where water actually collected reads as snow; snow on a slope threshold
+reads as a mask.
+"""
+import os
+
+TEXDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'textures')
+
+
+def load_img(path, non_color=False):
+    img = bpy.data.images.load(path, check_existing=True)
+    if non_color:
+        img.colorspace_settings.name = 'Non-Color'
+    return img
+
+
+def tex_node(nt, path, coord, scale, non_color=False, label=''):
+    """Box-projected image sampler at a given world scale."""
+    mapn = nt.nodes.new('ShaderNodeMapping')
+    mapn.inputs['Scale'].default_value = (scale, scale, scale)
+    nt.links.new(coord, mapn.inputs['Vector'])
+    t = nt.nodes.new('ShaderNodeTexImage')
+    t.image = load_img(path, non_color)
+    t.projection = 'BOX'
+    t.projection_blend = 0.35
+    t.extension = 'REPEAT'
+    t.label = label
+    nt.links.new(mapn.outputs['Vector'], t.inputs['Vector'])
+    return t
+
+
 mat = bpy.data.materials.new('Rock')
 mat.use_nodes = True
 nt = mat.node_tree
@@ -133,60 +205,115 @@ nt.nodes.clear()
 out = nt.nodes.new('ShaderNodeOutputMaterial')
 bsdf = nt.nodes.new('ShaderNodeBsdfPrincipled')
 geo = nt.nodes.new('ShaderNodeNewGeometry')
+
+R = os.path.join(TEXDIR, 'Rock030', 'Rock030_2K-JPG_')
+S = os.path.join(TEXDIR, 'Snow010A', 'Snow010A_2K-JPG_')
+
+# --- rock at two scales: macro strata plus fine grain ---
+rock_a = tex_node(nt, R + 'Color.jpg', geo.outputs['Position'], 0.22, label='rock macro')
+rock_b = tex_node(nt, R + 'Color.jpg', geo.outputs['Position'], 1.35, label='rock detail')
+rock_mix = nt.nodes.new('ShaderNodeMix')
+rock_mix.data_type = 'RGBA'
+rock_mix.blend_type = 'OVERLAY'
+rock_mix.inputs['Factor'].default_value = 0.45
+nt.links.new(rock_a.outputs['Color'], rock_mix.inputs['A'])
+nt.links.new(rock_b.outputs['Color'], rock_mix.inputs['B'])
+
+# Cool and darken the scan — quarried rock scans read too warm at altitude.
+rock_hsv = nt.nodes.new('ShaderNodeHueSaturation')
+rock_hsv.inputs['Saturation'].default_value = 0.55
+rock_hsv.inputs['Value'].default_value = 0.42
+nt.links.new(rock_mix.outputs['Result'], rock_hsv.inputs['Color'])
+
+rock_r = tex_node(nt, R + 'Roughness.jpg', geo.outputs['Position'], 0.22, True, 'rock rough')
+rock_n = tex_node(nt, R + 'NormalGL.jpg', geo.outputs['Position'], 0.22, True, 'rock nrm')
+rock_nd = tex_node(nt, R + 'NormalGL.jpg', geo.outputs['Position'], 1.35, True, 'rock nrm detail')
+
+# --- snow ---
+snow_c = tex_node(nt, S + 'Color.jpg', geo.outputs['Position'], 0.30, label='snow col')
+snow_r = tex_node(nt, S + 'Roughness.jpg', geo.outputs['Position'], 0.30, True, 'snow rough')
+snow_n = tex_node(nt, S + 'NormalGL.jpg', geo.outputs['Position'], 0.30, True, 'snow nrm')
+
+# --- where snow sits -----------------------------------------------------
 sep = nt.nodes.new('ShaderNodeSeparateXYZ')
-pos = nt.nodes.new('ShaderNodeNewGeometry')
-sep_p = nt.nodes.new('ShaderNodeSeparateXYZ')
-noise = nt.nodes.new('ShaderNodeTexNoise')
-ramp_slope = nt.nodes.new('ShaderNodeValToRGB')
-ramp_h = nt.nodes.new('ShaderNodeValToRGB')
-mul = nt.nodes.new('ShaderNodeMath')
-mix_col = nt.nodes.new('ShaderNodeMix')
-mix_rough = nt.nodes.new('ShaderNodeMix')
-
-# Snow lies where the ground is flat-ish AND high — the product of the two.
 nt.links.new(geo.outputs['Normal'], sep.inputs['Vector'])
-nt.links.new(sep.outputs['Z'], ramp_slope.inputs['Fac'])
-ramp_slope.color_ramp.elements[0].position = 0.50
+ramp_slope = nt.nodes.new('ShaderNodeValToRGB')
+ramp_slope.color_ramp.elements[0].position = 0.46
 ramp_slope.color_ramp.elements[1].position = 0.80
+nt.links.new(sep.outputs['Z'], ramp_slope.inputs['Fac'])
 
-nt.links.new(pos.outputs['Position'], sep_p.inputs['Vector'])
-nt.links.new(sep_p.outputs['Z'], ramp_h.inputs['Fac'])
-ramp_h.color_ramp.elements[0].position = 0.20
-ramp_h.color_ramp.elements[1].position = 0.34
+sep_p = nt.nodes.new('ShaderNodeSeparateXYZ')
+nt.links.new(geo.outputs['Position'], sep_p.inputs['Vector'])
+div_h = nt.nodes.new('ShaderNodeMath')
+div_h.operation = 'DIVIDE'
+div_h.inputs[1].default_value = PEAK_H
+nt.links.new(sep_p.outputs['Z'], div_h.inputs[0])
+ramp_h = nt.nodes.new('ShaderNodeValToRGB')
+ramp_h.color_ramp.elements[0].position = 0.24
+ramp_h.color_ramp.elements[1].position = 0.46
+nt.links.new(div_h.outputs[0], ramp_h.inputs['Fac'])
 
+mul = nt.nodes.new('ShaderNodeMath')
 mul.operation = 'MULTIPLY'
 nt.links.new(ramp_slope.outputs['Color'], mul.inputs[0])
 nt.links.new(ramp_h.outputs['Color'], mul.inputs[1])
+snow_mask = mul.outputs[0]
 
-# Break the snow line with noise so it is not a clean contour.
-noise.inputs['Scale'].default_value = 5.2
-noise.inputs['Detail'].default_value = 5.0
-sub = nt.nodes.new('ShaderNodeMath')
-sub.operation = 'SUBTRACT'
-nt.links.new(mul.outputs[0], sub.inputs[0])
-fac_noise = nt.nodes.new('ShaderNodeMath')
-fac_noise.operation = 'MULTIPLY'
-fac_noise.inputs[1].default_value = 0.34
-nt.links.new(noise.outputs['Fac'], fac_noise.inputs[0])
-nt.links.new(fac_noise.outputs[0], sub.inputs[1])
+if EROSION > 0:
+    # flowrate marks the drainage lines. Snow is scoured out of them, so it
+    # is subtracted — that is what puts dark rock in the gullies and leaves
+    # white on the ribs between, which is how real peaks read.
+    flow = nt.nodes.new('ShaderNodeAttribute')
+    flow.attribute_name = 'flowrate'
+    flow_rm = nt.nodes.new('ShaderNodeMapRange')
+    flow_rm.inputs['From Max'].default_value = 0.08   # raw means are tiny
+    flow_rm.inputs['To Max'].default_value = 1.0
+    nt.links.new(flow.outputs['Fac'], flow_rm.inputs['Value'])
+    scour = nt.nodes.new('ShaderNodeMath')
+    scour.operation = 'SUBTRACT'
+    scour.use_clamp = True
+    nt.links.new(mul.outputs[0], scour.inputs[0])
+    nt.links.new(flow_rm.outputs['Result'], scour.inputs[1])
+    snow_mask = scour.outputs[0]
 
 snow_ramp = nt.nodes.new('ShaderNodeValToRGB')
-snow_ramp.color_ramp.elements[0].position = 0.34
-snow_ramp.color_ramp.elements[1].position = 0.52
-nt.links.new(sub.outputs[0], snow_ramp.inputs['Fac'])
+snow_ramp.color_ramp.elements[0].position = 0.30
+snow_ramp.color_ramp.elements[1].position = 0.58
+nt.links.new(snow_mask, snow_ramp.inputs['Fac'])
+SNOW = snow_ramp.outputs['Color']
 
+# --- combine -------------------------------------------------------------
+mix_col = nt.nodes.new('ShaderNodeMix')
 mix_col.data_type = 'RGBA'
-mix_col.inputs['A'].default_value = (0.020, 0.021, 0.025, 1)   # near-black wet rock
-mix_col.inputs['B'].default_value = (0.94, 0.955, 0.98, 1)     # snow
-nt.links.new(snow_ramp.outputs['Color'], mix_col.inputs['Factor'])
+nt.links.new(SNOW, mix_col.inputs['Factor'])
+nt.links.new(rock_hsv.outputs['Color'], mix_col.inputs['A'])
+nt.links.new(snow_c.outputs['Color'], mix_col.inputs['B'])
 
-mix_rough.data_type = 'FLOAT'
-mix_rough.inputs[2].default_value = 0.88   # rock
-mix_rough.inputs[3].default_value = 0.34   # snow
-nt.links.new(snow_ramp.outputs['Color'], mix_rough.inputs['Factor'])
+mix_rough = nt.nodes.new('ShaderNodeMix')
+mix_rough.data_type = 'RGBA'
+nt.links.new(SNOW, mix_rough.inputs['Factor'])
+nt.links.new(rock_r.outputs['Color'], mix_rough.inputs['A'])
+nt.links.new(snow_r.outputs['Color'], mix_rough.inputs['B'])
+
+nrm_mix_rock = nt.nodes.new('ShaderNodeMix')
+nrm_mix_rock.data_type = 'RGBA'
+nrm_mix_rock.inputs['Factor'].default_value = 0.5
+nt.links.new(rock_n.outputs['Color'], nrm_mix_rock.inputs['A'])
+nt.links.new(rock_nd.outputs['Color'], nrm_mix_rock.inputs['B'])
+
+nrm_mix = nt.nodes.new('ShaderNodeMix')
+nrm_mix.data_type = 'RGBA'
+nt.links.new(SNOW, nrm_mix.inputs['Factor'])
+nt.links.new(nrm_mix_rock.outputs['Result'], nrm_mix.inputs['A'])
+nt.links.new(snow_n.outputs['Color'], nrm_mix.inputs['B'])
+
+nmap = nt.nodes.new('ShaderNodeNormalMap')
+nmap.inputs['Strength'].default_value = 1.25
+nt.links.new(nrm_mix.outputs['Result'], nmap.inputs['Color'])
 
 nt.links.new(mix_col.outputs['Result'], bsdf.inputs['Base Color'])
 nt.links.new(mix_rough.outputs['Result'], bsdf.inputs['Roughness'])
+nt.links.new(nmap.outputs['Normal'], bsdf.inputs['Normal'])
 nt.links.new(bsdf.outputs['BSDF'], out.inputs['Surface'])
 peak.data.materials.append(mat)
 
@@ -319,9 +446,14 @@ if ENGINE.upper() == 'CYCLES':
     try:
         prefs = bpy.context.preferences.addons['cycles'].preferences
         prefs.compute_device_type = 'METAL'
+        # refresh_devices() is mandatory: prefs.devices is empty until it is
+        # called, so a loop over it silently does nothing and the render
+        # quietly falls back to CPU. Measured 2.7x difference.
+        prefs.refresh_devices()
         for d in prefs.devices:
-            d.use = True
+            d.use = (d.type == 'METAL')   # not True — that re-enables the CPU
         scene.cycles.device = 'GPU'
+        print('CYCLES DEVICES:', [(d.name, d.type, d.use) for d in prefs.devices])
     except Exception as e:
         print('GPU unavailable, CPU fallback:', e)
 else:
