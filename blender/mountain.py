@@ -31,6 +31,8 @@ OUT = arg('--out', '//render/peak')
 SEED = int(arg('--seed', 7))
 ENGINE = arg('--engine', 'EEVEE')
 EROSION = int(arg('--erode', 1))
+DEM = arg('--dem', '')            # path to a real heightfield; empty = procedural
+DEMRES = int(arg('--demres', 0))  # downsample the DEM for faster iteration
 
 N = 512          # heightfield resolution
 SIZE = 20.0      # world units across
@@ -67,38 +69,75 @@ def ridged(n, octaves=8):
     return total / w
 
 
-ys, xs = np.mgrid[0:N, 0:N]
-u = (xs / (N - 1) - 0.5) * 2.0
-v = (ys / (N - 1) - 0.5) * 2.0
+USE_DEM = bool(DEM)
 
-r = np.sqrt(u ** 2 + v ** 2)
+if USE_DEM:
+    """
+    Real elevation instead of noise.
+
+    Procedural terrain is self-similar by construction: the same statistics
+    at every scale. Real mountains are not — they carry drainage networks,
+    glacial cirques, ridgeline continuity and bedding planes that noise has
+    no way to invent. Starting from a scan fixes all of it at once, and the
+    erosion and shading stack still runs on top.
+
+    Source: ArcticDEM v4.1 mosaic, 2 m posting, PGC/University of Minnesota,
+    tile 29_62_2_1. Stetind, Norway — 68.16153 N, 16.59967 E.
+    """
+    d = np.load(DEM)
+    q = d['h'].astype(np.float32)
+    lo_m, hi_m, span_m, _n = [float(v) for v in d['meta']]
+    h = lo_m + (q / 65535.0) * (hi_m - lo_m)          # back to metres
+
+    if DEMRES and DEMRES < h.shape[0]:
+        step_ds = h.shape[0] // DEMRES
+        h = h[::step_ds, ::step_ds][:DEMRES, :DEMRES]
+
+    N = h.shape[0]
+    # Keep true proportions: the box is SIZE units wide and represents
+    # span_m metres, so vertical scale follows from the same ratio.
+    M_PER_UNIT = span_m / SIZE
+    h = (h - h.min()) / M_PER_UNIT
+    PEAK_H = float(h.max())
+    RELIEF_M = hi_m - lo_m
+    print('DEM %dx%d  %.0f-%.0f m  %.0f m across  -> peak %.2f units'
+          % (N, N, lo_m, hi_m, span_m, PEAK_H))
+    ys, xs = np.mgrid[0:N, 0:N]
+else:
+    ys, xs = np.mgrid[0:N, 0:N]
+
+if not USE_DEM:
+    u = (xs / (N - 1) - 0.5) * 2.0
+    v = (ys / (N - 1) - 0.5) * 2.0
+
+    r = np.sqrt(u ** 2 + v ** 2)
 
 # The main cone. The exponent is the single most important number here:
 # below ~1.2 it reads as a hill, above ~1.7 it turns into a spike.
-cone = np.clip(1.0 - r / 0.86, 0.0, 1.0) ** 1.62
+    cone = np.clip(1.0 - r / 0.86, 0.0, 1.0) ** 1.62
 
 # Two lower shoulders so the summit has something to rise out of.
-def bump(cx, cy, rad, power):
-    d = np.sqrt((u - cx) ** 2 + (v - cy) ** 2)
-    return np.clip(1.0 - d / rad, 0.0, 1.0) ** power
+    def bump(cx, cy, rad, power):
+        d = np.sqrt((u - cx) ** 2 + (v - cy) ** 2)
+        return np.clip(1.0 - d / rad, 0.0, 1.0) ** power
 
 
-shoulders = 0.30 * bump(-0.52, 0.30, 0.62, 1.7) + 0.24 * bump(0.55, -0.22, 0.58, 1.8)
+    shoulders = 0.30 * bump(-0.52, 0.30, 0.62, 1.7) + 0.24 * bump(0.55, -0.22, 0.58, 1.8)
 
-ridge = ridged(N)
-ridge = (ridge - ridge.min()) / (ridge.max() - ridge.min())
+    ridge = ridged(N)
+    ridge = (ridge - ridge.min()) / (ridge.max() - ridge.min())
 
 # Ridges scale with the cone so the crests converge on the summit and the
 # skirt stays calm — detail where the eye goes, quiet everywhere else.
-h = cone * (0.30 + 1.05 * ridge) + shoulders * (0.35 + 0.65 * ridge) * 0.48
+    h = cone * (0.30 + 1.05 * ridge) + shoulders * (0.35 + 0.65 * ridge) * 0.48
 
 # A little large-scale warp so the silhouette is not symmetrical.
-h *= 0.86 + 0.28 * (fractal(N, beta=3.0) * 0.5 + 0.5)
+    h *= 0.86 + 0.28 * (fractal(N, beta=3.0) * 0.5 + 0.5)
 
-h = np.clip(h, 0.0, None)
-h /= h.max()
-h = h ** 1.18
-h *= PEAK_H
+    h = np.clip(h, 0.0, None)
+    h /= h.max()
+    h = h ** 1.18
+    h *= PEAK_H
 
 # ---------------------------------------------------------------- mesh
 step = SIZE / (N - 1)
@@ -249,8 +288,9 @@ div_h.operation = 'DIVIDE'
 div_h.inputs[1].default_value = PEAK_H
 nt.links.new(sep_p.outputs['Z'], div_h.inputs[0])
 ramp_h = nt.nodes.new('ShaderNodeValToRGB')
-ramp_h.color_ramp.elements[0].position = 0.24
-ramp_h.color_ramp.elements[1].position = 0.46
+SNOWLINE = float(arg('--snowline', 0.24))
+ramp_h.color_ramp.elements[0].position = SNOWLINE
+ramp_h.color_ramp.elements[1].position = SNOWLINE + 0.22
 nt.links.new(div_h.outputs[0], ramp_h.inputs['Fac'])
 
 mul = nt.nodes.new('ShaderNodeMath')
@@ -421,7 +461,17 @@ bpy.context.scene.camera = cam
 
 # Below the summit and back, so the peak rises against sky rather than
 # being looked down on.
-cam.location = Vector((float(arg('--camx', 1.6)), float(arg('--camy', -19.5)), float(arg('--camz', 3.1))))
+ORBIT = arg('--orbit', '')
+if ORBIT != '':
+    # Place the camera on a circle around the summit — the fastest way to
+    # find a mountain's iconic profile, which is always angle-specific.
+    ang = math.radians(float(ORBIT))
+    rad = float(arg('--radius', 26.0))
+    cam.location = Vector((summit.x + rad * math.sin(ang),
+                           summit.y - rad * math.cos(ang),
+                           float(arg('--camz', 5.4))))
+else:
+    cam.location = Vector((float(arg('--camx', 1.6)), float(arg('--camy', -19.5)), float(arg('--camz', 3.1))))
 target = Vector((summit.x * 0.3, summit.y * 0.3, summit.z * 0.80))
 direction = target - cam.location
 cam.rotation_euler = direction.to_track_quat('-Z', 'Y').to_euler()
