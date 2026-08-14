@@ -9,3 +9,19 @@ dist/
 .DS_Store
 *.log
 npm-debug.log*
+
+# Render output — regenerable from blender/mountain.py
+render/
+
+# Texture archives and the map variants we don't use.
+# Keep only Color, Roughness and NormalGL; the rest are for other engines
+# or are the DirectX-convention normals we don't sample.
+blender/textures/*.zip
+blender/textures/**/*NormalDX*
+blender/textures/**/*Displacement*
+blender/textures/**/*AmbientOcclusion*
+blender/textures/**/*.usdc
+blender/textures/**/*.tres
+blender/textures/**/*.mtlx
+blender/textures/**/*.blend
+blender/textures/**/*.png
