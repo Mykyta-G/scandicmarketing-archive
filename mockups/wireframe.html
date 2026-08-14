@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scandic Marketing — Wireframe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/*
+  WIREFRAME — structure and rhythm only. No imagery, no colour beyond the
+  brand ink. Every box is a dashed placeholder labelled with what goes in it.
+
+  Tokens are the real ones from PLAN.md, derived from his logo ink #001529
+  at hue 215. Type scale, spacing and tracking are the intended production
+  values, so the proportions here are the proportions we would ship.
+*/
+:root{
+  --paper:#FCFCFD; --surface:#F6F7F9; --sunken:#EFF1F3;
+  --ink:#001529; --ink-2:#1F3451; --ink-3:#546783; --ink-4:#8391A5;
+
+  --rule-8:rgba(0,21,41,.08);
+  --rule-12:rgba(0,21,41,.12);
+  --rule-18:rgba(0,21,41,.18);
+  --rule-28:rgba(0,21,41,.28);
+
+  --dash:rgba(0,21,41,.30);
+  --dash-strong:rgba(0,21,41,.48);
+  --note:#0F6FA8;              /* annotation colour — wireframe only */
+  --note-bg:rgba(15,111,168,.07);
+
+  --gut:clamp(20px,4.4vw,64px);
+  --maxw:1240px;
+  --ease:cubic-bezier(.25,1,.5,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--paper);scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink-2);
+  font-family:Inter,system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;letter-spacing:-.02em}
+h1,h2,h3{margin:0;color:var(--ink);font-weight:600;line-height:.98}
+p{margin:0}
+.wrap{max-width:var(--maxw);margin:0 auto;padding-inline:var(--gut)}
+
+/* ---- wireframe primitives ---- */
+.box{border:1.5px dashed var(--dash);border-radius:2px;position:relative;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  background:
+    repeating-linear-gradient(-45deg,transparent 0 9px,rgba(0,21,41,.022) 9px 18px)}
+.box--solid{background:var(--surface);border-style:dashed}
+.box--strong{border-color:var(--dash-strong)}
+.lbl{font-size:.68rem;font-weight:600;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-3);padding:10px 14px;line-height:1.5}
+.lbl b{display:block;color:var(--ink);font-size:.74rem;letter-spacing:.09em;margin-bottom:3px}
+.lbl i{font-style:normal;display:block;margin-top:5px;font-size:.63rem;letter-spacing:.05em;
+  text-transform:none;color:var(--ink-4)}
+
+/* text placeholder bars */
+.bars{display:grid;gap:9px;width:100%}
+.bar{height:11px;border-radius:2px;background:var(--rule-12)}
+.bar--h{height:clamp(30px,5.6vw,64px);background:var(--rule-18);border-radius:3px}
+.bar--sm{height:8px;background:var(--rule-8)}
+.w95{width:95%}.w88{width:88%}.w76{width:76%}.w64{width:64%}.w52{width:52%}.w40{width:40%}.w28{width:28%}
+
+/* annotation */
+.note{position:relative;margin-top:14px;padding:11px 14px 11px 34px;
+  border-left:2px solid var(--note);background:var(--note-bg);border-radius:0 3px 3px 0;
+  font-size:.78rem;line-height:1.55;color:var(--ink-2);letter-spacing:-.005em}
+.note::before{content:"i";position:absolute;left:12px;top:11px;width:14px;height:14px;
+  border-radius:50%;background:var(--note);color:#fff;font-size:.6rem;font-weight:700;
+  display:grid;place-items:center;font-style:normal}
+.note b{color:var(--ink)}
+
+/* section furniture */
+.sec{padding-block:clamp(56px,8.5vh,104px);border-top:1px dashed var(--rule-18)}
+.sec:first-of-type{border-top:0}
+.sec__tag{display:flex;align-items:center;gap:12px;margin-bottom:26px}
+.sec__tag span:first-child{font-size:.66rem;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:#fff;background:var(--ink);padding:5px 9px;border-radius:2px}
+.sec__tag span:last-child{font-size:.68rem;font-weight:600;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--ink-3)}
+.sec__hd{display:grid;grid-template-columns:1fr 1.35fr;gap:clamp(20px,4vw,54px);
+  align-items:end;margin-bottom:clamp(26px,4vh,44px)}
+@media(max-width:820px){.sec__hd{grid-template-columns:1fr;gap:18px;align-items:start}}
+
+/* ---- nav ---- */
+.nav{position:sticky;top:0;z-index:40;background:rgba(252,252,253,.9);
+  backdrop-filter:blur(12px);border-bottom:1.5px dashed var(--dash)}
+.nav__in{display:flex;align-items:center;gap:14px;height:66px}
+.nav__logo{width:132px;height:26px;margin-right:auto}
+.nav__link{width:64px;height:11px;border-radius:2px;background:var(--rule-12)}
+.nav__link--px{width:48px;background:var(--rule-28)}
+.nav__tel{width:104px;height:11px;border-radius:2px;background:var(--rule-12)}
+.nav__cta{width:118px;height:38px;border-radius:99px;border:1.5px dashed var(--dash-strong);
+  background:var(--sunken)}
+@media(max-width:860px){.nav__link,.nav__tel{display:none}}
+
+/* ---- hero ---- */
+.hero{padding-block:clamp(44px,7vh,84px) clamp(40px,6vh,72px)}
+.hero__grid{display:grid;grid-template-columns:1fr;gap:clamp(24px,4vh,42px)}
+.hero__type{max-width:19ch}
+.hero__row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.btn{height:50px;border-radius:99px;border:1.5px dashed var(--dash-strong);
+  display:inline-flex;align-items:center;gap:9px;padding-inline:26px}
+.btn--fill{background:var(--ink);border-style:solid;border-color:var(--ink)}
+.btn--fill .lbl{color:rgba(255,255,255,.9)}
+.btn .lbl{padding:0}
+.micro{font-size:.7rem;color:var(--ink-4);letter-spacing:-.005em}
+.reel{aspect-ratio:16/9;width:100%}
+.reel .play{position:absolute;width:74px;height:74px;border-radius:50%;
+  border:1.5px dashed var(--dash-strong);display:grid;place-items:center;background:rgba(252,252,253,.7)}
+.reel .play::after{content:"";border-left:16px solid var(--ink-3);
+  border-block:10px solid transparent;margin-left:4px}
+.reel__cap{position:absolute;left:14px;bottom:12px}
+.fold{position:relative;margin-top:6px;border-top:1.5px dashed var(--note);opacity:.75}
+.fold span{position:absolute;right:0;top:-9px;background:var(--paper);padding-left:9px;
+  font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--note);font-weight:700}
+
+/* ---- generic grids ---- */
+.row-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.row-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:900px){.row-4{grid-template-columns:repeat(2,1fr)}.row-3,.row-2{grid-template-columns:1fr}}
+
+/* client row */
+.clients{display:flex;gap:clamp(18px,3.6vw,54px);align-items:center;flex-wrap:wrap;
+  padding-block:22px;border-block:1px dashed var(--rule-18)}
+.clients .c{width:clamp(74px,9vw,110px);height:22px;border-radius:2px;background:var(--rule-12)}
+
+/* work */
+.case{display:grid;gap:12px}
+.case__f{aspect-ratio:16/10}
+.case--wide .case__f{aspect-ratio:21/9}
+.case__meta{display:flex;justify-content:space-between;gap:14px;align-items:center}
+.chip{height:22px;width:78px;border-radius:99px;border:1.5px dashed var(--dash);background:var(--sunken)}
+.num{height:clamp(26px,3.6vw,44px);width:clamp(88px,12vw,150px);border-radius:2px;background:var(--rule-18)}
+
+/* service rows */
+.svc{border-top:1px dashed var(--rule-18)}
+.svc__r{display:grid;grid-template-columns:44px 1.15fr 1.35fr 34px;gap:clamp(12px,2.4vw,30px);
+  align-items:center;padding-block:clamp(18px,2.6vh,30px);border-bottom:1px dashed var(--rule-18)}
+.svc__n{font-size:.66rem;font-weight:600;letter-spacing:.14em;color:var(--ink-4)}
+.svc__t{height:clamp(22px,3vw,38px);border-radius:2px;background:var(--rule-18)}
+.svc__ar{width:24px;height:24px;border-radius:50%;border:1.5px dashed var(--dash);justify-self:end}
+@media(max-width:820px){.svc__r{grid-template-columns:36px 1fr;gap:8px 14px}
+  .svc__r .bars{grid-column:2}.svc__ar{display:none}}
+
+/* capability matrix */
+.mtx{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule-18);
+  border:1.5px dashed var(--dash)}
+.mtx__c{background:var(--paper);padding:18px 16px;display:grid;gap:9px;align-content:start;min-height:190px}
+.mtx__h{font-size:.68rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink);padding-bottom:9px;border-bottom:1px dashed var(--rule-18);margin-bottom:3px}
+@media(max-width:900px){.mtx{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.mtx{grid-template-columns:1fr}}
+
+/* pricing */
+.price{display:grid;grid-template-columns:1fr 1.15fr;gap:clamp(22px,4vw,56px);align-items:start}
+.plan{border:1.5px dashed var(--dash-strong);border-radius:3px;padding:clamp(18px,2.6vw,28px);
+  display:grid;gap:13px;background:var(--surface)}
+.plan--2{background:transparent;border-color:var(--dash)}
+.plan__top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.plan__amt{height:clamp(34px,4.6vw,54px);width:clamp(110px,15vw,180px);border-radius:2px;background:var(--rule-28)}
+.plan__ul{display:grid;gap:8px;margin-top:2px}
+.risk{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.risk__c{border:1.5px dashed var(--dash);border-radius:3px;padding:14px 12px;text-align:center;
+  background:var(--paper)}
+@media(max-width:900px){.price{grid-template-columns:1fr}}
+@media(max-width:620px){.risk{grid-template-columns:1fr}}
+
+/* contact + footer */
+.cta{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(24px,4vw,56px);align-items:start}
+@media(max-width:860px){.cta{grid-template-columns:1fr}}
+.det{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule-18);
+  border:1.5px dashed var(--dash)}
+.det__c{background:var(--paper);padding:16px;display:grid;gap:8px}
+.foot{border-top:1.5px dashed var(--dash);padding-block:clamp(34px,5vh,54px) 26px;background:var(--surface)}
+.foot__g{display:grid;grid-template-columns:1.7fr 1fr 1fr 1fr;gap:clamp(18px,3vw,40px);
+  padding-bottom:26px;border-bottom:1px dashed var(--rule-18)}
+@media(max-width:820px){.foot__g{grid-template-columns:1fr 1fr}}
+.legal{margin-top:22px;border:1.5px dashed var(--note);border-radius:3px;padding:16px 18px;
+  background:var(--note-bg)}
+
+/* legend */
+.legend{position:fixed;right:14px;bottom:14px;z-index:60;background:var(--paper);
+  border:1.5px dashed var(--dash-strong);border-radius:3px;padding:13px 15px;max-width:270px;
+  box-shadow:0 1px 2px rgba(0,21,41,.04),0 8px 26px rgba(0,21,41,.07)}
+.legend h4{margin:0 0 9px;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.legend p{font-size:.7rem;color:var(--ink-3);line-height:1.5;display:flex;gap:9px;margin-bottom:5px}
+.legend p span{flex:0 0 auto;width:22px;height:13px;border-radius:2px;margin-top:2px}
+.legend .k1{border:1.5px dashed var(--dash)}
+.legend .k2{background:var(--rule-18)}
+.legend .k3{border-left:2px solid var(--note);background:var(--note-bg)}
+.legend button{margin-top:7px;font:inherit;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);background:0;border:0;padding:0;cursor:pointer;text-decoration:underline}
+body.no-notes .note,body.no-notes .legend p,body.no-notes .fold{display:none}
+@media(max-width:700px){.legend{display:none}}
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<header class="nav">
+  <div class="wrap nav__in">
+    <div class="box nav__logo"><span class="lbl">Logotyp</span></div>
+    <div class="nav__link"></div>
+    <div class="nav__link"></div>
+    <div class="nav__link nav__link--px" title="Priser"></div>
+    <div class="nav__link"></div>
+    <div class="nav__tel"></div>
+    <div class="box nav__cta"><span class="lbl">Boka möte</span></div>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ 01 HERO ============ -->
+<section class="wrap hero">
+  <div class="sec__tag"><span>01</span><span>Hero</span></div>
+  <div class="hero__grid">
+    <div class="hero__type">
+      <div class="bars">
+        <div class="bar bar--sm w28"></div>
+        <div class="bar bar--h w95"></div>
+        <div class="bar bar--h w64"></div>
+      </div>
+      <div class="bars" style="margin-top:20px;max-width:52ch">
+        <div class="bar w88"></div>
+        <div class="bar w64"></div>
+      </div>
+      <div class="hero__row">
+        <div class="btn btn--fill"><span class="lbl">Se vår reel</span></div>
+        <div class="btn"><span class="lbl">Boka möte</span></div>
+        <span class="micro">Svar inom 24 timmar</span>
+      </div>
+    </div>
+
+    <div class="box box--strong reel">
+      <span class="lbl"><b>Showreel — posterbild 16:9</b>
+        Stillbild är LCP-elementet. Video laddas först vid klick.
+        <i>AVIF → WebP, 15–35 KB · film ≤1,5 MB desktop / ≤600 KB mobil</i></span>
+      <div class="play"></div>
+      <div class="box reel__cap" style="border:0;background:0"><span class="lbl" style="padding:0"><i>0:48 · Showreel 2026</i></span></div>
+    </div>
+
+    <div class="fold"><span>Vikning ~800 px</span></div>
+    <div class="note"><b>Något måste sticka upp under vikningen.</b> 6 av 8 användare i NNG:s test fattade inte att en video-hero gick att skrolla alls. Kundraden nedan ska synas till hälften.</div>
+  </div>
+</section>
+
+<!-- ============ 02 KUNDRAD ============ -->
+<section class="wrap sec">
+  <div class="sec__tag"><span>02</span><span>Kundrad</span></div>
+  <div class="clients">
+    <span class="lbl" style="padding:0">Ett urval av kunder</span>
+    <div class="c"></div><div class="c"></div><div class="c"></div>
+    <div class="c"></div><div class="c"></div><div class="c"></div>
+  </div>
+  <div class="note">Riktiga namn finns: <b>Excite, Hantverkskollen, Prima El, Saunavant, Solna, Walleye.</b> Kräver skriftligt tillstånd. Medvetet lågt viktad — logotyper väger +0,67 i trovärdighet mot telefonnummer +1,56.</div>
+</section>
+
+<!-- ============ 03 BERÄTTELSEN ============ -->
+<section class="wrap sec">
+  <div class="sec__tag"><span>03</span><span>Berättelsen</span></div>
+  <div style="max-width:24ch">
+    <div class="bars">
+      <div class="bar bar--h w95"></div>
+      <div class="bar bar--h w76"></div>
+    </div>
+  </div>
+  <div class="bars" style="max-width:58ch;margin-top:22px">
+    <div class="bar w95"></div><div class="bar w88"></div><div class="bar w52"></div>
+  </div>
+  <div class="note"><b>Ca 40 ord, med en vändning.</b> Formen är: <i>något var fel → så vi gjorde annorlunda → vad det betyder för dig.</i> Innehållet måste komma från honom — varför han startade, vad som irriterade honom med byråerna han sett. Den här paragrafen är värd mer än all animation på sidan.</div>
+</section>
+
+<!-- ============ 04 ARBETET ============ -->
+<section class="wrap sec">
+  <div class="sec__tag"><span>04</span><span>Arbetet</span></div>
+  <div class="sec__hd">
+    <div class="bars"><div class="bar bar--h w88"></div></div>
+    <div class="bars"><div class="bar w95"></div><div class="bar w64"></div></div>
+  </div>
+
+  <div class="case case--wide" style="margin-bottom:16px">
+    <div class="box box--strong case__f">
+      <span class="lbl"><b>Case 1 — bild eller kort film</b>
+        Hovra: spelar i sin ruta. Två ingångar — <i>Spela</i> och <i>Case</i>
+        <i>Processbilder, inte porträtt</i></span>
+    </div>
+    <div class="case__meta">
+      <div style="display:flex;gap:8px"><div class="chip"></div><div class="chip"></div></div>
+      <div class="num"></div>
+    </div>
+    <div class="bars"><div class="bar w40"></div><div class="bar bar--sm w88"></div><div class="bar bar--sm w76"></div></div>
+  </div>
+
+  <div class="row-2">
+    <div class="case">
+      <div class="box case__f"><span class="lbl"><b>Case 2</b></span></div>
+      <div class="case__meta"><div class="chip"></div><div class="num"></div></div>
+      <div class="bars"><div class="bar w52"></div><div class="bar bar--sm w95"></div></div>
+    </div>
+    <div class="case">
+      <div class="box case__f"><span class="lbl"><b>Case 3</b></span></div>
+      <div class="case__meta"><div class="chip"></div><div class="num"></div></div>
+      <div class="bars"><div class="bar w52"></div><div class="bar bar--sm w95"></div></div>
+    </div>
+  </div>
+
+  <div class="note"><b>Siffran måste vara attribuerad.</b> Inte "+340%" utan <i>"Hantverkskollen: organisk trafik +512% mellan mars 2024 och mars 2025, uppmätt i Google Search Console."</i> Juridiskt krav (omvänd bevisbörda, MD 2012:2) — och mer övertygande.</div>
+</section>
+
+<!-- ============ 05 TJÄNSTER ============ -->
+<section class="wrap sec">
+  <div class="sec__tag"><span>05</span><span>Tjänster</span></div>
+  <div class="sec__hd">
+    <div class="bars"><div class="bar bar--h w76"></div></div>
+    <div class="bars"><div class="bar w95"></div><div class="bar w52"></div></div>
+  </div>
+  <div class="svc">
+    <div class="svc__r"><span class="svc__n">01</span><div class="svc__t"></div>
+      <div class="bars"><div class="bar bar--sm w95"></div><div class="bar bar--sm w64"></div></div>
+      <div class="svc__ar"></div></div>
+    <div class="svc__r"><span class="svc__n">02</span><div class="svc__t"></div>
+      <div class="bars"><div class="bar bar--sm w88"></div><div class="bar bar--sm w52"></div></div>
+      <div class="svc__ar"></div></div>
+    <div class="svc__r"><span class="svc__n">03</span><div class="svc__t"></div>
+      <div class="bars"><div class="bar bar--sm w95"></div><div class="bar bar--sm w40"></div></div>
+      <div class="svc__ar"></div></div>
+    <div class="svc__r"><span class="svc__n">04</span><div class="svc__t"></div>
+      <div class="bars"><div class="bar bar--sm w88"></div><div class="bar bar--sm w64"></div></div>
+      <div class="svc__ar"></div></div>
+  </div>
+  <div class="note">Fyra rader, inte fyra kort. Kort i 3-rutnät med ikon ovanför rubrik är den vanligaste mall-signalen som finns. Rörelse vid hovring: <b>4–24 px</b>, aldrig 40–60.</div>
+</section>
+
+<!-- ============ 06 INVÄNDNINGAR ============ -->
+<section class="wrap sec">
+  <div class="sec__tag"><span>06</span><span>Invändningar</span></div>
+  <div style="max-width:30ch">
+    <div class="bars"><div class="bar bar--h w95"></div><div class="bar bar--h w52"></div></div>
+  </div>
+  <div class="row-3" style="margin-top:26px">
+    <div class="box box--solid" style="min-height:120px"><span class="lbl"><b>"Har inte tid"</b><i>Svar i kundens egna ord</i></span></div>
+    <div class="box box--solid" style="min-height:120px"><span class="lbl"><b>"För dyrt"</b><i>Svar i kundens egna ord</i></span></div>
+    <div class="box box--solid" style="min-height:120px"><span class="lbl"><b>"Testat förut"</b><i>Svar i kundens egna ord</i></span></div>
+  </div>
+  <div class="note">Jeton-greppet: <i>"Kontaktlös betalning? Javisst. Utgiftstak? Finns. Frysa kortet? Också det."</i> Invändningar besvarade i kundens tonläge, inte som funktionslista.</div>
+</section>
+
+<!-- ============ 07 KAPACITETSMATRIS ============ -->
+<section class="wrap sec">
+  <div class="sec__tag"><span>07</span><span>Kapacitetsmatris</span></div>
+  <div class="sec__hd">
+    <div class="bars"><div class="bar bar--h w88"></div></div>
+    <div class="bars"><div class="bar w95"></div><div class="bar w76"></div></div>
+  </div>
+  <div class="mtx">
+    <div class="mtx__c"><div class="mtx__h">Film</div>
+      <div class="bar bar--sm w88"></div><div class="bar bar--sm w76"></div><div class="bar bar--sm w95"></div>
+      <div class="bar bar--sm w64"></div><div class="bar bar--sm w88"></div><div class="bar bar--sm w52"></div>
+      <div class="bar bar--sm w76"></div></div>
+    <div class="mtx__c"><div class="mtx__h">Foto</div>
+      <div class="bar bar--sm w76"></div><div class="bar bar--sm w95"></div><div class="bar bar--sm w64"></div>
+      <div class="bar bar--sm w88"></div><div class="bar bar--sm w52"></div><div class="bar bar--sm w76"></div>
+      <div class="bar bar--sm w88"></div></div>
+    <div class="mtx__c"><div class="mtx__h">Annons</div>
+      <div class="bar bar--sm w95"></div><div class="bar bar--sm w64"></div><div class="bar bar--sm w88"></div>
+      <div class="bar bar--sm w76"></div><div class="bar bar--sm w95"></div><div class="bar bar--sm w52"></div>
+      <div class="bar bar--sm w64"></div></div>
+    <div class="mtx__c"><div class="mtx__h">Hemsida</div>
+      <div class="bar bar--sm w88"></div><div class="bar bar--sm w52"></div><div class="bar bar--sm w76"></div>
+      <div class="bar bar--sm w95"></div><div class="bar bar--sm w64"></div><div class="bar bar--sm w88"></div>
+      <div class="bar bar--sm w76"></div></div>
+  </div>
+  <div class="note"><b>25–30 namngivna leveranser.</b> Det här är sektionen som får 499 kr/mån att se ut som mycket istället för lite. Kräver hans faktiska lista — gissar jag blir den värdelös.</div>
+</section>
+
+<!-- ============ 08 HEMSIDA / PRIS ============ -->
+<section class="wrap sec">
+  <div class="sec__tag"><span>08</span><span>Hemsida — priset</span></div>
+  <div class="price">
+    <div>
+      <div class="bars"><div class="bar bar--h w95"></div><div class="bar bar--h w64"></div></div>
+      <div class="bars" style="margin-top:20px;max-width:44ch">
+        <div class="bar w95"></div><div class="bar w88"></div><div class="bar w40"></div>
+      </div>
+      <div class="bars" style="margin-top:18px;max-width:44ch">
+        <div class="bar bar--sm w88"></div><div class="bar bar--sm w76"></div>
+      </div>
+    </div>
+    <div>
+      <div class="plan">
+        <div class="plan__top"><span class="lbl" style="padding:0">Standard</span><div class="chip"></div></div>
+        <div class="plan__amt"></div>
+        <span class="micro">exkl. moms · förstaårstotal anges</span>
+        <div class="plan__ul">
+          <div class="bar bar--sm w88"></div><div class="bar bar--sm w76"></div>
+          <div class="bar bar--sm w95"></div><div class="bar bar--sm w64"></div>
+        </div>
+        <div class="btn btn--fill" style="justify-content:center"><span class="lbl">Kom igång</span></div>
+        <span class="micro" style="text-align:center">Ingen bindningstid. Säg upp när du vill.</span>
+      </div>
+      <div class="plan plan--2" style="margin-top:14px">
+        <div class="plan__top"><span class="lbl" style="padding:0">Premium</span></div>
+        <div class="plan__amt"></div>
+        <div class="plan__ul"><div class="bar bar--sm w76"></div><div class="bar bar--sm w88"></div></div>
+      </div>
+
+      <div class="risk">
+        <div class="risk__c"><span class="lbl"><b>Domänen är din</b><i>Från dag ett</i></span></div>
+        <div class="risk__c"><span class="lbl"><b>Allt exporterbart</b><i>Om du slutar</i></span></div>
+        <div class="risk__c"><span class="lbl"><b>Ångervecka</b><i>Frivillig</i></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>Tre riskkort direkt under priset</b> — Designjoy-greppet. Företag har ingen ångerrätt i Sverige, så en frivillig sådan är något ingen konkurrent kan matcha. Nästan ingen svarar på <i>"vad händer om jag slutar betala?"</i> på säljsidan. Det är luckan.</div>
+</section>
+
+<!-- ============ 09 PROCESS ============ -->
+<section class="wrap sec">
+  <div class="sec__tag"><span>09</span><span>Process</span></div>
+  <div class="row-4">
+    <div class="box box--solid" style="min-height:150px"><span class="lbl"><b>01 Vi lyssnar</b></span></div>
+    <div class="box box--solid" style="min-height:150px"><span class="lbl"><b>02 Vi föreslår</b></span></div>
+    <div class="box box--solid" style="min-height:150px"><span class="lbl"><b>03 Vi producerar</b></span></div>
+    <div class="box box--solid" style="min-height:150px"><span class="lbl"><b>04 Vi mäter</b></span></div>
+  </div>
+</section>
+
+<!-- ============ 10 KONTAKT ============ -->
+<section class="wrap sec">
+  <div class="sec__tag"><span>10</span><span>Kontakt</span></div>
+  <div class="cta">
+    <div>
+      <div class="bars"><div class="bar bar--h w95"></div><div class="bar bar--h w52"></div></div>
+      <div class="bars" style="margin-top:18px;max-width:46ch"><div class="bar w88"></div><div class="bar w64"></div></div>
+      <div class="hero__row">
+        <div class="btn btn--fill"><span class="lbl">Boka kostnadsfritt möte</span></div>
+        <span class="micro">eller ring direkt</span>
+      </div>
+    </div>
+    <div class="det">
+      <div class="det__c"><span class="lbl" style="padding:0"><b>Telefon</b></span><div class="bar w88"></div></div>
+      <div class="det__c"><span class="lbl" style="padding:0"><b>E-post</b></span><div class="bar w95"></div></div>
+      <div class="det__c"><span class="lbl" style="padding:0"><b>Besök</b></span><div class="bar w76"></div></div>
+      <div class="det__c"><span class="lbl" style="padding:0"><b>Öppettider</b></span><div class="bar w64"></div></div>
+    </div>
+  </div>
+  <div class="note"><b>Ingen formulär-först.</b> Företagsköpare föredrar att ringa en människa; formulär väcker misstanke. Telefonnummer (+1,56) och fysisk adress (+1,67) är de starkast mätta trovärdighetssignalerna vi kontrollerar — starkare än kundlogotyper och utmärkelser tillsammans. Namngiven person, inte info@.</div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__g">
+      <div>
+        <div class="box" style="width:132px;height:26px;margin-bottom:14px"><span class="lbl">Logotyp</span></div>
+        <div class="bars" style="max-width:30ch"><div class="bar bar--sm w95"></div><div class="bar bar--sm w76"></div></div>
+      </div>
+      <div><span class="lbl" style="padding:0 0 10px"><b>Tjänster</b></span>
+        <div class="bars"><div class="bar bar--sm w76"></div><div class="bar bar--sm w88"></div><div class="bar bar--sm w64"></div><div class="bar bar--sm w76"></div></div></div>
+      <div><span class="lbl" style="padding:0 0 10px"><b>Företaget</b></span>
+        <div class="bars"><div class="bar bar--sm w64"></div><div class="bar bar--sm w76"></div><div class="bar bar--sm w52"></div></div></div>
+      <div><span class="lbl" style="padding:0 0 10px"><b>Juridiskt</b></span>
+        <div class="bars"><div class="bar bar--sm w88"></div><div class="bar bar--sm w76"></div><div class="bar bar--sm w64"></div></div></div>
+    </div>
+
+    <div class="legal">
+      <span class="lbl" style="padding:0"><b>Obligatorisk företagsinformation</b></span>
+      <div class="row-4" style="margin-top:12px;gap:10px">
+        <div class="bars"><div class="bar bar--sm w88"></div><div class="bar bar--sm w64"></div></div>
+        <div class="bars"><div class="bar bar--sm w76"></div><div class="bar bar--sm w88"></div></div>
+        <div class="bars"><div class="bar bar--sm w95"></div><div class="bar bar--sm w52"></div></div>
+        <div class="bars"><div class="bar bar--sm w64"></div><div class="bar bar--sm w76"></div></div>
+      </div>
+      <div class="note" style="margin-top:12px"><b>Firmanamn · org.nr · säte · momsreg.nr · adress · "Godkänd för F-skatt".</b> ABL 28:5 är vitessanktionerad, e-handelslagen 8 § behandlas som väsentlig information under MFL. F-skatt är frivilligt men den billigaste förtroendesignal som finns — utan den blir <i>köparen</i> ansvarig för 30% skatteavdrag.</div>
+    </div>
+  </div>
+</footer>
+
+<aside class="legend">
+  <h4>Wireframe</h4>
+  <p><span class="k1"></span> Streckat = block som ska fyllas</p>
+  <p><span class="k2"></span> Staplar = text, bredd visar längd</p>
+  <p><span class="k3"></span> Blått = anteckning, inte innehåll</p>
+  <button id="t">Dölj anteckningar</button>
+</aside>
+
+<script>
+document.getElementById('t').addEventListener('click', function(){
+  document.body.classList.toggle('no-notes');
+  this.textContent = document.body.classList.contains('no-notes') ? 'Visa anteckningar' : 'Dölj anteckningar';
+});
+</script>
+</body>
+</html>
