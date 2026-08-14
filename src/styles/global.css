@@ -119,6 +119,150 @@ button {
   white-space: nowrap;
 }
 
+/* ==========================================================================
+   Buttons — one system, every surface.
+
+   The hover is a fill that sweeps in from the bottom-left on a slight skew.
+   The skew is what makes it read as a swipe rather than a bar sliding up;
+   it is scaled on X from a fixed origin, so it composites on the GPU and
+   never touches layout.
+
+   Variants only ever set four custom properties. Nothing else changes, which
+   is why a solid button on the film and an outline button on paper feel like
+   the same object.
+   ========================================================================== */
+.btn {
+  --btn-bg: transparent;
+  --btn-fg: var(--ink);
+  --btn-bd: transparent;
+  --btn-fill: var(--ink);
+  --btn-fill-fg: var(--paper);
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  isolation: isolate;
+  overflow: hidden;
+
+  padding: 1rem 1.75rem;
+  border: 1px solid var(--btn-bd);
+  border-radius: 2px;
+
+  font-size: var(--t-note);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+
+  transition:
+    color var(--dur-enter) var(--ease-out-quart),
+    border-color var(--dur-enter) var(--ease-out-quart),
+    transform var(--dur-hover) var(--ease-out-quart);
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  /* Overscan so the skewed edge never exposes a corner. */
+  inset: -1px -18%;
+  background: var(--btn-fill);
+  transform: scaleX(0) skewX(-14deg);
+  transform-origin: left center;
+  transition: transform var(--dur-large) var(--ease-out-quart);
+}
+
+.btn svg {
+  transition: transform var(--dur-enter) var(--ease-out-quart);
+}
+
+@media (hover: hover) {
+  .btn:hover {
+    color: var(--btn-fill-fg);
+    border-color: var(--btn-fill);
+    transform: translateY(-1px);
+  }
+  .btn:hover::before {
+    transform: scaleX(1) skewX(-14deg);
+  }
+  .btn:hover svg {
+    transform: translateX(3px);
+  }
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* Keyboard users get the same fill, so the affordance isn't mouse-only. */
+.btn:focus-visible {
+  color: var(--btn-fill-fg);
+  border-color: var(--btn-fill);
+}
+.btn:focus-visible::before {
+  transform: scaleX(1) skewX(-14deg);
+}
+
+/* ---- variants ---- */
+.btn--accent {
+  --btn-bg: var(--accent);
+  --btn-fg: var(--on-accent);
+  --btn-bd: var(--accent);
+  --btn-fill: var(--ink);
+  --btn-fill-fg: var(--paper);
+}
+
+.btn--solid {
+  --btn-bg: var(--ink);
+  --btn-fg: var(--paper);
+  --btn-bd: var(--ink);
+  --btn-fill: var(--accent);
+  --btn-fill-fg: var(--on-accent);
+}
+
+.btn--outline {
+  --btn-bg: transparent;
+  --btn-fg: var(--ink);
+  --btn-bd: var(--rule-28);
+  --btn-fill: var(--ink);
+  --btn-fill-fg: var(--paper);
+}
+
+/* On the film: light chrome, accent fill. */
+.btn--light {
+  --btn-bg: var(--on-dark);
+  --btn-fg: var(--ink);
+  --btn-bd: var(--on-dark);
+  --btn-fill: var(--accent);
+  --btn-fill-fg: var(--on-accent);
+}
+
+.btn--ghost {
+  --btn-bg: transparent;
+  --btn-fg: var(--on-dark);
+  --btn-bd: rgb(238 242 246 / 0.4);
+  --btn-fill: var(--on-dark);
+  --btn-fill-fg: var(--ink);
+}
+
+.btn--sm {
+  padding: 0.68rem 1.15rem;
+}
+.btn--lg {
+  padding: 1.15rem 2rem;
+  font-size: var(--t-body);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn::before {
+    transition: none;
+  }
+}
+
 /* ---------- reveal ----------
    Resting state is never opacity:0 without a fallback — if the observer
    never fires the content would be permanently invisible. The `is-in`

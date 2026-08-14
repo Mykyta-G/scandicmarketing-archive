@@ -28,6 +28,18 @@
   --on-dark-2: #b8c4d2;
 
   /*
+    One accent, for actions only. Warm against the cold navy so it separates
+    instead of blending, and it is the only hue on the site that isn't 215°.
+
+    Verified both ways: 3.41:1 on paper and 5.28:1 on the ink, so it stays
+    visible on the light sections and on the hero film. If it ever appears on
+    something that isn't clickable, it is being used wrong.
+  */
+  --accent: #e2622a;
+  --accent-deep: #c04d1c;
+  --on-accent: #fffaf7;
+
+  /*
     Rules are the ink at alpha, never a separately chosen grey. Because they
     derive from the text colour they stay correct when a section inverts.
   */

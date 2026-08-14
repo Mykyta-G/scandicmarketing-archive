@@ -78,17 +78,25 @@ export const stats = [
 ] as const;
 
 /*
-  Real clients, recovered from the current site's asset paths.
-  ⚠️ CrossFit and Foodtel logo files are still missing.
+  Client logos. Order and per-logo widths are carried over verbatim from the
+  current site — each width is a hand-set optical correction, so a wide
+  wordmark and a compact roundel read at the same visual weight. Keeping
+  them means the row looks the way he already tuned it.
+
+  ⚠️ CrossFit's logo is not in the current bundle — still needed.
   ⚠️ Written permission needed before publishing any of these.
 */
+export const clientsLabel = 'Några av våra samarbeten';
+export const clientsCaption = 'Förtroende från ledande företag som satsar på sin marknadsföring';
+
 export const clients = [
-  { name: 'Hantverkskollen', logo: '/img/client-hantverkskollen-logo.png' },
-  { name: 'Solna Byggfirma', logo: '/img/client-solna-logo.png' },
-  { name: 'Excite', logo: '/img/client-excite-logo.png' },
-  { name: 'Prima El', logo: '/img/client-prima-el-logo.png' },
-  { name: 'Saunavant', logo: '/img/client-saunavant-logo.png' },
-  { name: 'Walleye', logo: '/img/client-walleye.png' },
+  { name: 'SaunAvant', width: 288, logo: '/img/client-saunavant-logo.png' },
+  { name: 'Prima EL', width: 179, logo: '/img/client-prima-el-logo.png' },
+  { name: 'Walleye', width: 320, logo: '/img/client-walleye.png' },
+  { name: 'Hantverkskollen', width: 312, logo: '/img/client-hantverkskollen-logo.png' },
+  { name: 'Foodtel', width: 320, logo: '/img/client-foodtel.svg' },
+  { name: 'Solna Byggfirma', width: 224, logo: '/img/client-solna-logo.png' },
+  { name: 'Excite Trapwithus', width: 246, logo: '/img/client-excite-logo.png' },
 ] as const;
 
 export type Case = {

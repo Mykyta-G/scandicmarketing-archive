@@ -1,81 +1,141 @@
 ---
-import { clients } from '../data/site';
+import { clients, clientsLabel, clientsCaption } from '../data/site';
+
+/* Duplicated once so translateX(-50%) lands exactly on a seam — a seamless
+   loop with no JS and no reflow. */
+const track = [...clients, ...clients];
 ---
 
 <section class="clients" id="samarbeten">
   <div class="wrap">
-    <p class="clients__lbl micro rv">Några av våra samarbeten</p>
+    <header class="clients__hd rv">
+      <p class="clients__lbl">{clientsLabel}</p>
+      <span class="clients__rule" aria-hidden="true"></span>
+    </header>
+  </div>
 
-    <ul class="clients__row">
+  <div class="clients__marquee">
+    <div class="clients__track">
       {
-        clients.map((c) => (
-          <li class="clients__item rv">
-            <img src={c.logo} alt={c.name} loading="lazy" decoding="async" />
-          </li>
+        track.map((c, i) => (
+          <div class="clients__item" style={`--w:${c.width}px`} aria-hidden={i >= clients.length ? 'true' : undefined}>
+            <img
+              src={c.logo}
+              alt={i >= clients.length ? '' : c.name}
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
         ))
       }
-    </ul>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <p class="clients__cap rv">{clientsCaption}</p>
   </div>
 </section>
 
 <style>
   /*
-    Hard cut from the film to paper. No gradient between them — the cut is
+    Hard cut from the film to paper — no gradient between them. The cut is
     where the drama is, and it makes the light surface read as a deliberate
     second material rather than "the rest of the page".
   */
   .clients {
-    background: var(--paper);
-    padding-block: clamp(3rem, 7vh, 5.5rem);
+    background: var(--surface);
+    padding-block: clamp(3rem, 7vh, 4.5rem);
     border-bottom: 1px solid var(--rule-12);
+    overflow: hidden;
   }
 
-  .clients__lbl {
-    color: var(--ink-3);
+  .clients__hd {
     text-align: center;
-    margin-bottom: clamp(2rem, 4vh, 3rem);
+    display: grid;
+    justify-items: center;
+    gap: 0.85rem;
+  }
+  .clients__lbl {
+    font-size: var(--t-lead);
+    font-weight: 500;
+    color: var(--ink-3);
+  }
+  .clients__rule {
+    width: 64px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
   }
 
-  .clients__row {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  /* ---- marquee ---- */
+  .clients__marquee {
+    margin-block: clamp(1.5rem, 4vh, 2.5rem);
+    position: relative;
+    /* Fade the ends instead of cutting them — the row should read as
+       continuing past the viewport, not as a clipped strip. */
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 9%,
+      #000 91%,
+      transparent 100%
+    );
+  }
+
+  .clients__track {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
-    gap: clamp(1.75rem, 5vw, 4.5rem);
+    gap: 3rem;
+    width: max-content;
+    animation: marquee 46s linear infinite;
+  }
+  /* Readable and clickable when someone actually looks at it. */
+  .clients__marquee:hover .clients__track {
+    animation-play-state: paused;
+  }
+
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
   }
 
   /*
-    Normalised by optical weight, not by pixel width: each logo gets its own
-    cap so a wide wordmark and a compact roundel read at the same size. The
-    current site sets them all loose, so CrossFit and Excite run off the edge
-    while Hantverkskollen sits twice as large as everything else.
+    Width per logo is the hand-set optical correction from the current site.
+    max-width keeps it inside that box — on the current site the images
+    overflow their containers, which is why CrossFit and Excite are clipped
+    at the edges of the row.
   */
   .clients__item {
+    flex: 0 0 auto;
+    width: clamp(120px, calc(var(--w) * 0.5), var(--w));
+    height: clamp(48px, 7vw, 76px);
     display: flex;
     align-items: center;
     justify-content: center;
-    height: clamp(26px, 3.4vw, 36px);
   }
 
   .clients__item img {
+    max-width: 100%;
     max-height: 100%;
     width: auto;
+    height: auto;
     object-fit: contain;
-
-    /* One treatment for a set of logos in six different palettes. */
-    filter: grayscale(1) contrast(0.9) opacity(0.58);
-    transition:
-      filter var(--dur-large) var(--ease-out-quart),
-      transform var(--dur-large) var(--ease-out-quart);
   }
 
-  @media (hover: hover) {
-    .clients__item:hover img {
-      filter: grayscale(0) contrast(1) opacity(1);
-      transform: scale(1.02);
+  .clients__cap {
+    text-align: center;
+    font-size: var(--t-note);
+    color: var(--ink-3);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .clients__track {
+      animation: none;
+      /* Without motion the duplicate half is dead weight — let it scroll. */
+      width: auto;
+      overflow-x: auto;
+      justify-content: flex-start;
     }
   }
 </style>
