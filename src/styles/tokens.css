@@ -1,0 +1,80 @@
+/*
+  Design tokens.
+
+  Everything derives from one hue — 215° — measured from his own logo.
+  The ink is #001529, sampled directly from the logo artwork. The greys are
+  that hue at lower saturation, never neutral grey, which is what stops a
+  monochrome page reading as ungraded rather than deliberate.
+
+  No pure #000 and no pure #FFF anywhere. Nothing in the top tier ships
+  them: Linear's ground is #08090a, Vercel's brightest foreground is 92%
+  alpha. Pure white irradiates and reads amateur.
+*/
+:root {
+  /* ---- surfaces ---- */
+  --paper: #fcfcfd;
+  --surface: #f6f7f9;
+  --sunken: #eff1f3;
+  --ground: #001529; /* inverted sections, hero scrim */
+
+  /* ---- text ramp, four roles, measured against --paper ---- */
+  --ink: #001529;   /* 17.98:1  headings                       */
+  --ink-2: #1f3451; /* 12.28:1  body copy                      */
+  --ink-3: #546783; /*  5.62:1  captions, labels               */
+  --ink-4: #8391a5; /*  3.12:1  DECORATIVE ONLY — never text   */
+
+  /* on the dark hero */
+  --on-dark: #eef2f6;
+  --on-dark-2: #b8c4d2;
+
+  /*
+    Rules are the ink at alpha, never a separately chosen grey. Because they
+    derive from the text colour they stay correct when a section inverts.
+  */
+  --rule-8: rgb(0 21 41 / 0.08);
+  --rule-12: rgb(0 21 41 / 0.12);
+  --rule-18: rgb(0 21 41 / 0.18);
+  --rule-28: rgb(0 21 41 / 0.28);
+  --rule-light: rgb(238 242 246 / 0.16);
+
+  /* ---- type ---- */
+  --sans: 'Montserrat Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /*
+    Tracking scales negatively with size — three tiers. Micro labels take
+    positive tracking. This single rule is most of what separates typeset
+    from typed.
+  */
+  --track-body: -0.02em;
+  --track-mid: -0.04em;
+  --track-display: -0.055em;
+  --track-micro: 0.14em;
+
+  --t-micro: 0.6875rem;
+  --t-note: 0.8125rem;
+  --t-body: 1rem;
+  --t-lead: clamp(1.05rem, 1.4vw, 1.25rem);
+  --t-h3: clamp(1.15rem, 1.6vw, 1.4rem);
+  --t-h2: clamp(2rem, 4.6vw, 3.6rem);
+  --t-display: clamp(2.6rem, 8.4vw, 7rem);
+
+  /* ---- space ---- */
+  --gutter: clamp(1.25rem, 4.4vw, 4rem);
+  --page-max: 1280px;
+  --measure: 42ch;
+
+  /* ---- motion ----
+     Measured from production CSS across Linear, Stripe, Vercel and Resend.
+     Almost everything is ease-out: the element arrives fast and settles.
+     No overshoot — bounce on interface elements reads as dated. */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-signature: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --dur-hover: 140ms;
+  --dur-enter: 260ms;
+  --dur-exit: 180ms; /* exits run ~⅔ of enters */
+  --dur-large: 460ms;
+
+  --nav-h: 74px;
+}

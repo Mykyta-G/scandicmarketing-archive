@@ -1,0 +1,343 @@
+---
+import { company, hero } from '../data/site';
+---
+
+<section class="hero" id="hero">
+  <video
+    class="hero__film"
+    poster={hero.video.poster}
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="none"
+    disablepictureinpicture
+    aria-hidden="true"
+    tabindex="-1"
+    data-film
+  >
+    <source src={hero.video.srcMobile} type="video/mp4" media="(max-width: 820px)" />
+    <source src={hero.video.src} type="video/mp4" />
+  </video>
+
+  {/*
+    The knockout. multiply: the white letterforms pass the film through at
+    full brightness, while the panel multiplies the surround down to roughly
+    a fifth. The name is not sitting ON the film — it is made OF it.
+
+    The panel is navy-tinted rather than neutral grey, so the darkened
+    surround belongs to his palette instead of going muddy.
+  */}
+  <div class="hero__knock" aria-hidden="true">
+    <h1 class="hero__name">
+      {company.nameLines.map((l) => <span class="hero__line">{l}</span>)}
+    </h1>
+  </div>
+
+  {/*
+    Brightness floor. multiply alone makes the letters exactly as bright as
+    whatever is behind them, so a dark passage of film would render them
+    unreadable. This screen layer lifts them by a fixed amount — the film
+    still moves through the type, it just can never drop below legible.
+  */}
+  <div class="hero__lift" aria-hidden="true">
+    <span class="hero__name hero__name--ghost">
+      {company.nameLines.map((l) => <span class="hero__line">{l}</span>)}
+    </span>
+  </div>
+
+  {/* The accessible heading. The two layers above are decorative duplicates. */}
+  <h1 class="sr-only">{company.name} — {hero.sub}</h1>
+
+  <div class="hero__ui">
+    <p class="hero__sub">{hero.sub}</p>
+
+    <div class="hero__actions">
+      <a class="btn btn--solid" href={hero.primary.href}>
+        {hero.primary.label}
+        <svg width="15" height="10" viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M0 6h17M13 1l5 5-5 5" />
+        </svg>
+      </a>
+      <a class="btn btn--line" href={hero.secondary.href}>{hero.secondary.label}</a>
+    </div>
+
+    <p class="hero__trust">{hero.trust}</p>
+  </div>
+
+  <a class="hero__cue" href="#samarbeten">
+    <span class="micro">Scrolla</span>
+    <span class="hero__cue-rule" aria-hidden="true"></span>
+  </a>
+
+  {/*
+    A looping video over five seconds presented alongside other content
+    requires a pause control — WCAG 2.2.2, Level A, not AAA. The European
+    Accessibility Act has been enforceable since 28 June 2025.
+  */}
+  <button class="hero__pause" type="button" data-pause aria-pressed="false">
+    <span class="sr-only">Pausa bakgrundsfilmen</span>
+    <svg width="10" height="12" viewBox="0 0 10 12" aria-hidden="true">
+      <rect class="i-pause" width="3" height="12" rx="0.5" fill="currentColor" />
+      <rect class="i-pause" x="7" width="3" height="12" rx="0.5" fill="currentColor" />
+      <path class="i-play" d="M0 0l10 6-10 6z" fill="currentColor" style="display:none" />
+    </svg>
+  </button>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    height: 100svh;
+    min-height: 34rem;
+    overflow: hidden;
+    background: var(--ground);
+    isolation: isolate;
+  }
+
+  .hero__film {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    /*
+      The source is a hazy aerial — flat by nature. Contrast is lifted so the
+      film reads through the letterforms instead of filling them with one
+      even grey, and saturation is pulled back so the frame sits in his
+      palette rather than fighting it.
+    */
+    filter: contrast(1.22) saturate(0.62) brightness(1.02);
+  }
+
+  .hero__knock {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    /* Optical centring — the sub, buttons and cue sit below, so geometric
+       centre reads low. */
+    padding-bottom: clamp(7rem, 17vh, 12rem);
+    background: #33435c;
+    mix-blend-mode: multiply;
+  }
+
+  .hero__lift {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    padding-bottom: clamp(7rem, 17vh, 12rem);
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+
+  .hero__name {
+    display: grid;
+    justify-items: center;
+    margin: 0;
+    font-size: var(--t-display);
+    font-weight: 700;
+    letter-spacing: 0.02em; /* the logo lockup is tracked out, not tight */
+    line-height: 0.94;
+    color: #fff;
+    user-select: none;
+    text-align: center;
+  }
+  .hero__name--ghost {
+    color: rgb(255 255 255 / 0.3);
+  }
+  .hero__line {
+    display: block;
+  }
+
+  /* ---- everything below the wordmark ---- */
+  .hero__ui {
+    position: absolute;
+    z-index: 3;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: clamp(5.5rem, 13vh, 9rem);
+    width: min(100% - 2 * var(--gutter), 44rem);
+    text-align: center;
+    display: grid;
+    justify-items: center;
+    gap: 1.35rem;
+  }
+
+  .hero__sub {
+    font-size: var(--t-micro);
+    font-weight: 600;
+    letter-spacing: var(--track-micro);
+    text-transform: uppercase;
+    color: var(--on-dark);
+    opacity: 0.8;
+  }
+
+  .hero__actions {
+    display: flex;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: var(--t-note);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    padding: 0.95rem 1.6rem;
+    border-radius: 2px;
+    transition:
+      transform var(--dur-hover) var(--ease-out-quart),
+      background var(--dur-hover) var(--ease-out-quart),
+      color var(--dur-hover) var(--ease-out-quart);
+  }
+  .btn--solid {
+    background: var(--on-dark);
+    color: var(--ink);
+  }
+  .btn--line {
+    border: 1px solid rgb(238 242 246 / 0.4);
+    color: var(--on-dark);
+  }
+  @media (hover: hover) {
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+    .btn--line:hover {
+      background: var(--on-dark);
+      color: var(--ink);
+      border-color: var(--on-dark);
+    }
+  }
+
+  .hero__trust {
+    font-size: var(--t-note);
+    color: var(--on-dark-2);
+  }
+
+  .hero__cue {
+    position: absolute;
+    z-index: 3;
+    left: var(--gutter);
+    bottom: clamp(1.5rem, 4vh, 2.5rem);
+    display: grid;
+    justify-items: start;
+    gap: 0.6rem;
+    color: var(--on-dark);
+    opacity: 0.7;
+    transition: opacity var(--dur-hover) var(--ease-out-quart);
+  }
+  .hero__cue:hover {
+    opacity: 1;
+  }
+  .hero__cue-rule {
+    width: 1px;
+    height: 2.2rem;
+    background: linear-gradient(currentColor, transparent);
+    transform-origin: top;
+    animation: cue 2.4s var(--ease-out-quart) infinite;
+  }
+  @keyframes cue {
+    0%,
+    100% {
+      transform: scaleY(0.4);
+      opacity: 0.4;
+    }
+    50% {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+  }
+
+  .hero__pause {
+    position: absolute;
+    z-index: 4;
+    right: var(--gutter);
+    bottom: clamp(1.5rem, 4vh, 2.5rem);
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgb(238 242 246 / 0.32);
+    border-radius: 50%;
+    color: var(--on-dark);
+    opacity: 0.72;
+    transition:
+      opacity var(--dur-hover) var(--ease-out-quart),
+      border-color var(--dur-hover) var(--ease-out-quart);
+  }
+  .hero__pause:hover {
+    opacity: 1;
+    border-color: var(--on-dark);
+  }
+
+  @media (max-width: 700px) {
+    .hero__cue {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__cue-rule {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  const film = document.querySelector<HTMLVideoElement>('[data-film]');
+  const btn = document.querySelector<HTMLButtonElement>('[data-pause]');
+  const nav = document.querySelector<HTMLElement>('[data-nav]');
+  const hero = document.getElementById('hero');
+
+  /*
+    preload="none" keeps the poster as the LCP element. autoplay fetches the
+    file anyway, so nothing is lost by not preloading it.
+
+    iOS blocks autoplay under Low Power Mode and thermal throttling, and
+    neither is detectable — so catch the rejection and leave the poster up
+    rather than showing a dead frame.
+  */
+  if (film) {
+    film.play().catch(() => {
+      btn?.setAttribute('aria-pressed', 'true');
+      toggleIcon(true);
+    });
+  }
+
+  function toggleIcon(paused: boolean) {
+    const svg = btn?.querySelector('svg');
+    svg?.querySelectorAll<SVGElement>('.i-pause').forEach((el) => {
+      el.style.display = paused ? 'none' : '';
+    });
+    const play = svg?.querySelector<SVGElement>('.i-play');
+    if (play) play.style.display = paused ? '' : 'none';
+  }
+
+  btn?.addEventListener('click', () => {
+    if (!film) return;
+    const paused = !film.paused;
+    if (paused) film.pause();
+    else film.play().catch(() => {});
+    btn.setAttribute('aria-pressed', String(paused));
+    toggleIcon(paused);
+  });
+
+  /* Nav flips to its light surface once the film is behind you. */
+  if (hero && nav) {
+    new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) nav.removeAttribute('data-stuck');
+        else nav.setAttribute('data-stuck', '');
+      },
+      { rootMargin: `-${72}px 0px 0px 0px`, threshold: 0 }
+    ).observe(hero);
+  }
+</script>

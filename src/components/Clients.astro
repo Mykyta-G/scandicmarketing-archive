@@ -1,0 +1,81 @@
+---
+import { clients } from '../data/site';
+---
+
+<section class="clients" id="samarbeten">
+  <div class="wrap">
+    <p class="clients__lbl micro rv">Några av våra samarbeten</p>
+
+    <ul class="clients__row">
+      {
+        clients.map((c) => (
+          <li class="clients__item rv">
+            <img src={c.logo} alt={c.name} loading="lazy" decoding="async" />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  /*
+    Hard cut from the film to paper. No gradient between them — the cut is
+    where the drama is, and it makes the light surface read as a deliberate
+    second material rather than "the rest of the page".
+  */
+  .clients {
+    background: var(--paper);
+    padding-block: clamp(3rem, 7vh, 5.5rem);
+    border-bottom: 1px solid var(--rule-12);
+  }
+
+  .clients__lbl {
+    color: var(--ink-3);
+    text-align: center;
+    margin-bottom: clamp(2rem, 4vh, 3rem);
+  }
+
+  .clients__row {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1.75rem, 5vw, 4.5rem);
+  }
+
+  /*
+    Normalised by optical weight, not by pixel width: each logo gets its own
+    cap so a wide wordmark and a compact roundel read at the same size. The
+    current site sets them all loose, so CrossFit and Excite run off the edge
+    while Hantverkskollen sits twice as large as everything else.
+  */
+  .clients__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: clamp(26px, 3.4vw, 36px);
+  }
+
+  .clients__item img {
+    max-height: 100%;
+    width: auto;
+    object-fit: contain;
+
+    /* One treatment for a set of logos in six different palettes. */
+    filter: grayscale(1) contrast(0.9) opacity(0.58);
+    transition:
+      filter var(--dur-large) var(--ease-out-quart),
+      transform var(--dur-large) var(--ease-out-quart);
+  }
+
+  @media (hover: hover) {
+    .clients__item:hover img {
+      filter: grayscale(0) contrast(1) opacity(1);
+      transform: scale(1.02);
+    }
+  }
+</style>

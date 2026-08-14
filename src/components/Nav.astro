@@ -1,0 +1,147 @@
+---
+import { company, nav, hero } from '../data/site';
+---
+
+<header class="nav" data-nav>
+  <div class="nav__in">
+    <a class="nav__brand" href="/" aria-label={company.name}>
+      <img src="/img/scandic-logo-light.png" alt="" width="150" height="44" />
+    </a>
+
+    <nav class="nav__links" aria-label="Huvudmeny">
+      {nav.map((l) => <a href={l.href}>{l.label}</a>)}
+    </nav>
+
+    <a class="nav__tel" href={`tel:${company.phoneHref}`}>{company.phone}</a>
+    <a class="nav__cta" href={hero.primary.href}>{hero.primary.label}</a>
+  </div>
+</header>
+
+<style>
+  /*
+    Transparent over the film, then a surface once the hero is behind you.
+    The logo swaps to its dark variant at the same moment — the light logo
+    is unreadable on paper, the dark one is unreadable on the film.
+  */
+  .nav {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 60;
+    transition:
+      background var(--dur-large) var(--ease-out-quart),
+      border-color var(--dur-large) var(--ease-out-quart),
+      backdrop-filter var(--dur-large) var(--ease-out-quart);
+    border-bottom: 1px solid transparent;
+  }
+
+  .nav__in {
+    max-width: var(--page-max);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+    height: var(--nav-h);
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 2.6vw, 2.4rem);
+  }
+
+  .nav__brand {
+    margin-right: auto;
+    display: flex;
+    align-items: center;
+  }
+  .nav__brand img {
+    height: 26px;
+    width: auto;
+    transition: height var(--dur-large) var(--ease-out-quart);
+  }
+
+  .nav__links {
+    display: flex;
+    gap: clamp(1rem, 2.2vw, 2rem);
+  }
+  .nav__links a {
+    font-size: var(--t-note);
+    font-weight: 500;
+    color: var(--on-dark);
+    opacity: 0.82;
+    padding-block: 4px;
+    position: relative;
+    transition:
+      opacity var(--dur-hover) var(--ease-out-quart),
+      color var(--dur-large) var(--ease-out-quart);
+  }
+  .nav__links a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 100%;
+    bottom: 0;
+    height: 1px;
+    background: currentColor;
+    transition: right var(--dur-enter) var(--ease-out-quart);
+  }
+  @media (hover: hover) {
+    .nav__links a:hover {
+      opacity: 1;
+    }
+    .nav__links a:hover::after {
+      right: 0;
+    }
+  }
+
+  .nav__tel {
+    font-size: var(--t-note);
+    font-weight: 500;
+    color: var(--on-dark);
+    opacity: 0.82;
+    white-space: nowrap;
+    transition: color var(--dur-large) var(--ease-out-quart);
+  }
+
+  .nav__cta {
+    font-size: var(--t-note);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    padding: 0.68rem 1.15rem;
+    border-radius: 2px;
+    background: var(--on-dark);
+    color: var(--ink);
+    white-space: nowrap;
+    transition:
+      transform var(--dur-hover) var(--ease-out-quart),
+      background var(--dur-large) var(--ease-out-quart),
+      color var(--dur-large) var(--ease-out-quart);
+  }
+  @media (hover: hover) {
+    .nav__cta:hover {
+      transform: translateY(-1px);
+    }
+  }
+
+  /* ---- past the hero ---- */
+  .nav[data-stuck] {
+    background: rgb(252 252 253 / 0.88);
+    backdrop-filter: blur(14px) saturate(1.4);
+    border-bottom-color: var(--rule-12);
+  }
+  .nav[data-stuck] .nav__brand img {
+    height: 23px;
+    content: url('/img/scandic-logo.png');
+  }
+  .nav[data-stuck] .nav__links a,
+  .nav[data-stuck] .nav__tel {
+    color: var(--ink-2);
+    opacity: 1;
+  }
+  .nav[data-stuck] .nav__cta {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  @media (max-width: 900px) {
+    .nav__links,
+    .nav__tel {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,158 @@
+@import '@fontsource-variable/montserrat';
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--paper);
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  /* Sticky nav must not cover an anchored heading — WCAG 2.2 SC 2.4.11. */
+  scroll-padding-top: calc(var(--nav-h) + 1rem);
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--sans);
+  font-size: var(--t-body);
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: var(--track-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: var(--track-mid);
+  text-wrap: balance;
+}
+
+h2 {
+  font-size: var(--t-h2);
+}
+h3 {
+  font-size: var(--t-h3);
+  letter-spacing: var(--track-body);
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+video,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+/*
+  Focus ring uses outline, not box-shadow: box-shadow is dropped entirely in
+  Windows High Contrast mode, which would leave the site unusable by keyboard
+  for exactly the people most likely to need it.
+*/
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 1px;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ---------- layout helpers ---------- */
+.wrap {
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.micro {
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: var(--track-micro);
+  text-transform: uppercase;
+}
+
+.lead {
+  font-size: var(--t-lead);
+  line-height: 1.55;
+  max-width: var(--measure);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- reveal ----------
+   Resting state is never opacity:0 without a fallback — if the observer
+   never fires the content would be permanently invisible. The `is-in`
+   class is added by JS; `no-js` short-circuits it entirely. */
+.rv {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 700ms var(--ease-out-expo),
+    transform 700ms var(--ease-out-expo);
+}
+.rv.is-in,
+.no-js .rv {
+  opacity: 1;
+  transform: none;
+}
+
+/*
+  Gate motion in rather than stripping it out. Never `* { animation: none }`
+  — transitionend stops firing and anything waiting on it hangs forever.
+*/
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .rv {
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -1,34 +1,40 @@
-# Scandic Marketing — Site Overhaul
+# Scandic Marketing
 
-Rebuild of [scandicmarketing.se](https://www.scandicmarketing.se/) — a digital marketing agency in Helsingborg, Sweden.
+Rebuild of [scandicmarketing.se](https://www.scandicmarketing.se/) — a marketing,
+video and photography agency in Helsingborg.
 
-**Goal:** the best-in-class site in the Nordic marketing-agency niche. Fast, server-rendered, accessible, and structurally incapable of the SEO problems documented in the audit.
+## Stack
 
-## Status
+- **Astro 7**, static output — every route is a real HTML file at build time
+- **Plain CSS** with custom properties (`src/styles/tokens.css`)
+- **Montserrat Variable**, self-hosted via `@fontsource`
+- No icon library — inline SVG only
 
-| | |
+## Commands
+
+```bash
+npm run dev      # http://localhost:4321
+npm run build    # → dist/
+npm run preview
+npm run check
+```
+
+## Where things live
+
+| Path | What |
 |---|---|
-| Phase | Audit complete — build not yet started |
-| Current site | Vite + React SPA on Vercel, client-rendered |
-| Target stack | TBD (see [AUDIT.md](./AUDIT.md) → "The honest recommendation") |
+| `src/data/site.ts` | **All copy.** Single edit point. Items marked ⚠️ need confirmation. |
+| `src/styles/tokens.css` | Colour, type, motion tokens — derived from the logo ink `#001529` |
+| `src/components/` | Section components |
+| `public/video/` | Hero film, encoded to budget (961 KB / 390 KB) |
 
-## What's here
+## Why this rebuild
 
-- **[AUDIT.md](./AUDIT.md)** — full technical and SEO audit of the live site. 13 findings, ranked, with the four same-day fixes separated from the structural ones.
+The current site is a Lovable-generated client-rendered SPA. Every URL returns
+the same empty 19,882-byte shell, so search engines get nothing and every page
+shares one canonical. See [AUDIT.md](./AUDIT.md) for all 13 findings and
+[PLAN.md](./PLAN.md) for the plan and research.
 
-## The short version
-
-The live site is well-designed and well-written, but ships as a client-only React SPA: every URL returns the same empty HTML shell, so search engines get no content, every subpage's canonical tag points at the homepage, and 404s return HTTP 200. A placeholder phone number (`+46 70 123 45 67`) is live on the contact section. An 11.4 KB keyword-stuffing meta tag makes up 58% of the homepage HTML.
-
-Full detail and fix order in [AUDIT.md](./AUDIT.md).
-
-## Business context
-
-**Services:** digital marketing (Google/Meta/TikTok Ads), website subscriptions, video production, photography
-**Location:** Redaregatan 48, 252 30 Helsingborg
-**Language:** Swedish
-**Notable offer:** website rental — 499 kr/mån (Standard) and 1499 kr/mån (Premium), ex. moms, 12-month terms
-
-## License
-
-Private client work. Not for redistribution.
+**Before launch, read [PLAN.md §0](./PLAN.md).** A personnummer is currently
+published on the live site, and the performance claims are unsubstantiated under
+marknadsföringslagen.

@@ -1,0 +1,43 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import Clients from '../components/Clients.astro';
+import { seo } from '../data/site';
+---
+
+<Base title={seo.title} description={seo.description} path="/">
+  <Nav />
+
+  <main id="main">
+    <Hero />
+    <Clients />
+
+    {/*
+      Order from here, per the agreed skeleton:
+        3  Siffrorna      — moved out of the hero, each with a source line
+        4  Arbetet        — the four cases, proof before explanation
+        5  Tjänster       — the four services
+        6  Hemsida        — 499 / 1499, brought up from the subpage
+        7  Process        — four steps
+        8  Kontakt        — phone, address, hours, a named person
+        9  Footer         — plus the legally required company block
+    */}
+  </main>
+</Base>
+
+<script>
+  /* Reveal on scroll. Fires once, downward only, and the resting state is
+     safe if the observer never runs — see .rv in global.css. */
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e, i) => {
+        if (!e.isIntersecting) return;
+        window.setTimeout(() => e.target.classList.add('is-in'), (i % 6) * 60);
+        io.unobserve(e.target);
+      });
+    },
+    { threshold: 0.12, rootMargin: '0px 0px -6% 0px' }
+  );
+  document.querySelectorAll('.rv').forEach((el) => io.observe(el));
+</script>
