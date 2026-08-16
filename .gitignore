@@ -25,3 +25,12 @@ blender/textures/**/*.tres
 blender/textures/**/*.mtlx
 blender/textures/**/*.blend
 blender/textures/**/*.png
+
+# Agent scratch that landed in the repo root during research
+/bk.json
+/gn*.json
+/si.html
+
+# Skill tooling — reinstallable with `npx skills add`
+.agents/
+.claude/

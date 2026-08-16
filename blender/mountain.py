@@ -97,7 +97,11 @@ if USE_DEM:
     # Keep true proportions: the box is SIZE units wide and represents
     # span_m metres, so vertical scale follows from the same ratio.
     M_PER_UNIT = span_m / SIZE
-    h = (h - h.min()) / M_PER_UNIT
+    # Vertical exaggeration. Standard practice in terrain visualisation:
+    # real mountains are wider than they are tall, and a true-scale render
+    # of a broad massif reads as a hill. 1.3-1.6 stays believable.
+    VEX = float(arg('--vex', 1.0))
+    h = (h - h.min()) / M_PER_UNIT * VEX
     PEAK_H = float(h.max())
     RELIEF_M = hi_m - lo_m
     print('DEM %dx%d  %.0f-%.0f m  %.0f m across  -> peak %.2f units'
@@ -229,7 +233,7 @@ def tex_node(nt, path, coord, scale, non_color=False, label=''):
     t = nt.nodes.new('ShaderNodeTexImage')
     t.image = load_img(path, non_color)
     t.projection = 'BOX'
-    t.projection_blend = 0.35
+    t.projection_blend = float(arg('--pblend', 0.55))
     t.extension = 'REPEAT'
     t.label = label
     nt.links.new(mapn.outputs['Vector'], t.inputs['Vector'])
@@ -245,7 +249,10 @@ out = nt.nodes.new('ShaderNodeOutputMaterial')
 bsdf = nt.nodes.new('ShaderNodeBsdfPrincipled')
 geo = nt.nodes.new('ShaderNodeNewGeometry')
 
-R = os.path.join(TEXDIR, 'Rock030', 'Rock030_2K-JPG_')
+# Rock058: measured #4E545A, hue 210 deg, 7% saturation — cold granite.
+# Rock030 was warm sandstone; no amount of desaturation fixed it. Fighting
+# a wrong texture is slower than picking the right one.
+R = os.path.join(TEXDIR, 'Rock058', 'Rock058_2K-JPG_')
 S = os.path.join(TEXDIR, 'Snow010A', 'Snow010A_2K-JPG_')
 
 # --- rock at two scales: macro strata plus fine grain ---
@@ -260,8 +267,8 @@ nt.links.new(rock_b.outputs['Color'], rock_mix.inputs['B'])
 
 # Cool and darken the scan — quarried rock scans read too warm at altitude.
 rock_hsv = nt.nodes.new('ShaderNodeHueSaturation')
-rock_hsv.inputs['Saturation'].default_value = 0.55
-rock_hsv.inputs['Value'].default_value = 0.42
+rock_hsv.inputs['Saturation'].default_value = float(arg('--rocksat', 0.85))
+rock_hsv.inputs['Value'].default_value = float(arg('--rockval', 0.62))
 nt.links.new(rock_mix.outputs['Result'], rock_hsv.inputs['Color'])
 
 rock_r = tex_node(nt, R + 'Roughness.jpg', geo.outputs['Position'], 0.22, True, 'rock rough')
@@ -277,8 +284,9 @@ snow_n = tex_node(nt, S + 'NormalGL.jpg', geo.outputs['Position'], 0.30, True, '
 sep = nt.nodes.new('ShaderNodeSeparateXYZ')
 nt.links.new(geo.outputs['Normal'], sep.inputs['Vector'])
 ramp_slope = nt.nodes.new('ShaderNodeValToRGB')
-ramp_slope.color_ramp.elements[0].position = 0.46
-ramp_slope.color_ramp.elements[1].position = 0.80
+SLOPEGATE = float(arg('--slope', 0.18))
+ramp_slope.color_ramp.elements[0].position = SLOPEGATE
+ramp_slope.color_ramp.elements[1].position = SLOPEGATE + 0.42
 nt.links.new(sep.outputs['Z'], ramp_slope.inputs['Fac'])
 
 sep_p = nt.nodes.new('ShaderNodeSeparateXYZ')
@@ -317,8 +325,8 @@ if EROSION > 0:
     snow_mask = scour.outputs[0]
 
 snow_ramp = nt.nodes.new('ShaderNodeValToRGB')
-snow_ramp.color_ramp.elements[0].position = 0.30
-snow_ramp.color_ramp.elements[1].position = 0.58
+snow_ramp.color_ramp.elements[0].position = 0.22
+snow_ramp.color_ramp.elements[1].position = 0.78
 nt.links.new(snow_mask, snow_ramp.inputs['Fac'])
 SNOW = snow_ramp.outputs['Color']
 
@@ -386,7 +394,7 @@ wnt.links.new(bg.outputs['Background'], wout.inputs['Surface'])
 sun_data = bpy.data.lights.new('Sun', type='SUN')
 sun_data.energy = 14.0
 sun_data.angle = math.radians(1.2)
-sun_data.color = (1.0, 0.82, 0.60)
+sun_data.color = (1.0, 0.93, 0.86)   # near-neutral; the sky carries the warmth
 sun = bpy.data.objects.new('Sun', sun_data)
 bpy.context.collection.objects.link(sun)
 sun.rotation_euler = (math.radians(90.0 - EL), 0.0, math.radians(AZ))
@@ -472,7 +480,11 @@ if ORBIT != '':
                            float(arg('--camz', 5.4))))
 else:
     cam.location = Vector((float(arg('--camx', 1.6)), float(arg('--camy', -19.5)), float(arg('--camz', 3.1))))
-target = Vector((summit.x * 0.3, summit.y * 0.3, summit.z * 0.80))
+# Aim at the summit itself. The old 0.3 factor pulled the aim back toward
+# the origin, which is fine for a cone centred on the box but throws an
+# off-centre peak — like the Matterhorn's — out to the frame edge.
+AIM = float(arg('--aim', 1.0))
+target = Vector((summit.x * AIM, summit.y * AIM, summit.z * float(arg('--aimz', 0.72))))
 direction = target - cam.location
 cam.rotation_euler = direction.to_track_quat('-Z', 'Y').to_euler()
 

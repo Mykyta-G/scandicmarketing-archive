@@ -1,0 +1,56 @@
+---
+/* Test route for the flight. Kept off the homepage until the motion is right,
+   so an 800 KB map library can't wander onto the critical path by accident. */
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Journey from '../components/Journey.astro';
+---
+
+<Base
+  title="Resan — Scandic Marketing"
+  description="Prototyp: skrolldriven flygning från fjället till Helsingborg."
+  path="/resa/"
+>
+  <Nav />
+  <main id="main">
+    <section class="intro">
+      <div class="wrap">
+        <p class="micro">Prototyp</p>
+        <h1>Skrolla.</h1>
+        <p class="lead">
+          Flygningen börjar över Stetind i Nordland och slutar över Redaregatan.
+          Riktig terräng, riktiga flygbilder, en kamera.
+        </p>
+      </div>
+    </section>
+
+    <Journey />
+
+    <section class="outro">
+      <div class="wrap">
+        <p class="lead">Här tar sidan vid.</p>
+      </div>
+    </section>
+  </main>
+</Base>
+
+<style>
+  .intro,
+  .outro {
+    background: var(--paper);
+    padding-block: clamp(6rem, 24vh, 14rem);
+  }
+  .intro .micro {
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  .intro h1 {
+    font-size: clamp(2.6rem, 8vw, 6rem);
+    letter-spacing: var(--track-display);
+    margin-bottom: 1.25rem;
+  }
+  .intro .lead,
+  .outro .lead {
+    color: var(--ink-3);
+  }
+</style>
